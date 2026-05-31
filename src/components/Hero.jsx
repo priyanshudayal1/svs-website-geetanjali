@@ -13,6 +13,7 @@ import vegFriesBurger from '../assets/hero-carousel/veg-fries-burger.png'
 import vegNaanRoll from '../assets/hero-carousel/veg-naan-roll.png'
 import vegPartyCombo from '../assets/hero-carousel/veg-party-combo.png'
 import logo from '../assets/logo.png'
+import OurMenu from './OurMenu'
 
 const stores = [
   {
@@ -112,7 +113,7 @@ function Hero() {
   return (
     <main className="min-h-[calc(100vh-74px)] bg-[#f1f0f4] pb-12">
       <section
-        className="relative min-h-[350px] overflow-hidden bg-[#120905] before:absolute before:inset-0 before:z-[1] before:bg-[linear-gradient(90deg,rgb(0_0_0_/_88%)_0%,rgb(0_0_0_/_62%)_33%,rgb(0_0_0_/_8%)_70%)] max-[540px]:min-h-[430px]"
+        className="relative min-h-[350px] overflow-hidden rounded-b-[36px] bg-[#120905] before:absolute before:inset-0 before:z-[1] before:bg-[linear-gradient(90deg,rgb(0_0_0_/_88%)_0%,rgb(0_0_0_/_62%)_33%,rgb(0_0_0_/_8%)_70%)] max-[540px]:min-h-[430px] max-[540px]:rounded-b-[24px]"
       >
         <div className="absolute inset-0" aria-hidden="true">
           {heroSlides.map((slide, index) => (
@@ -265,6 +266,7 @@ function Hero() {
           </div>
         </div>
       </section>
+      <OurMenu />
     </main>
   )
 }
