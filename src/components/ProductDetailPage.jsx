@@ -77,6 +77,8 @@ function ProductDetailPage({ addToCart }) {
   const liveItem = detail?.item || item
 
   useEffect(() => {
+    // Reset product choices when navigating between menu items.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDetail(null)
     setDetailStatus('idle')
     setSelectedAddOns([])

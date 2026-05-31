@@ -5,6 +5,8 @@ import {
   FiMapPin,
   FiNavigation,
   FiSearch,
+  FiShoppingBag,
+  FiTruck,
 } from 'react-icons/fi'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import heroImage from '../assets/food-hero.png'
@@ -28,6 +30,10 @@ const fallbackStores = [
     onlineOrdersStartMins: '0',
     onlineOrdersEndHours: '23',
     onlineOrdersEndMins: '0',
+    onlineOrdersDelivery: '1',
+    onlineOrdersSelfPickup: '1',
+    dineInOrders: '1',
+    pureVegetarian: '1',
   },
   {
     locality: 'Civic Centre',
@@ -40,6 +46,10 @@ const fallbackStores = [
     onlineOrdersStartMins: '0',
     onlineOrdersEndHours: '23',
     onlineOrdersEndMins: '0',
+    onlineOrdersDelivery: '1',
+    onlineOrdersSelfPickup: '1',
+    dineInOrders: '1',
+    pureVegetarian: '1',
   },
   {
     locality: 'Satna',
@@ -51,6 +61,10 @@ const fallbackStores = [
     onlineOrdersStartMins: '0',
     onlineOrdersEndHours: '23',
     onlineOrdersEndMins: '0',
+    onlineOrdersDelivery: '1',
+    onlineOrdersSelfPickup: '1',
+    dineInOrders: '1',
+    pureVegetarian: '1',
   },
 ]
 
@@ -63,8 +77,21 @@ const geocodeHashKey =
   '7d110d504384caed9fd0bee8f00f6107802786f2e14c7ee71e3763dc793d89f6'
 
 const controlButton =
-  'inline-flex min-h-8 items-center gap-2 rounded-md border border-[#e9e2df] bg-white px-3 text-xs font-extrabold text-[#363a40] shadow-sm'
+  'inline-flex min-h-9 items-center gap-2 rounded-md border border-[#e9e2df] bg-white px-3 text-xs font-extrabold text-[#363a40] shadow-sm transition hover:border-[var(--color-primary-border)] hover:text-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-55'
 const selectButton = `${controlButton} min-w-[190px] justify-between max-[820px]:min-w-[min(100%,260px)]`
+
+const orderTypeOptions = [
+  { value: 'all', label: 'All orders' },
+  { value: 'delivery', label: 'Delivery' },
+  { value: 'pickup', label: 'Pickup' },
+  { value: 'dineIn', label: 'Dine-in' },
+]
+
+const sortOptions = [
+  { value: 'nearest', label: 'Nearest' },
+  { value: 'name', label: 'Name' },
+  { value: 'open', label: 'Open first' },
+]
 
 const heroSlides = [
   {
@@ -100,6 +127,58 @@ function formatStoreHours(store) {
 
 function formatDistance(distance) {
   return distance ? `${Number(distance).toFixed(2)} KMs away` : ''
+}
+
+function getDistanceValue(store) {
+  const distance = Number(store.distance)
+
+  return Number.isFinite(distance) ? distance : Number.POSITIVE_INFINITY
+}
+
+function minutesFromStoreTime(hour, mins) {
+  return Number(hour || 0) * 60 + Number(mins || 0)
+}
+
+function isStoreOpenNow(store) {
+  const now = new Date()
+  const currentMinutes = now.getHours() * 60 + now.getMinutes()
+  const startMinutes = minutesFromStoreTime(
+    store.onlineOrdersStartHours ?? '11',
+    store.onlineOrdersStartMins ?? '0',
+  )
+  const endMinutes = minutesFromStoreTime(
+    store.onlineOrdersEndHours ?? '23',
+    store.onlineOrdersEndMins ?? '0',
+  )
+
+  if (startMinutes === endMinutes) {
+    return true
+  }
+
+  if (startMinutes < endMinutes) {
+    return currentMinutes >= startMinutes && currentMinutes <= endMinutes
+  }
+
+  return currentMinutes >= startMinutes || currentMinutes <= endMinutes
+}
+
+function supportsOrderType(store, orderType) {
+  if (orderType === 'delivery') {
+    return store.onlineOrdersDelivery === '1'
+  }
+
+  if (orderType === 'pickup') {
+    return (
+      store.onlineOrdersSelfPickup === '1' ||
+      store.onlineOrdersSelfPickUpOn === '1'
+    )
+  }
+
+  if (orderType === 'dineIn') {
+    return store.dineInOrders === '1'
+  }
+
+  return true
 }
 
 async function fetchJson(url, options = {}) {
@@ -144,10 +223,11 @@ async function getStoresForCoordinates({ lat, lng, signal }) {
 
 function StoreCard({ store }) {
   const distance = formatDistance(store.distance)
+  const openNow = isStoreOpenNow(store)
 
   return (
     <article
-      className={`relative flex min-h-[86px] items-center justify-between gap-4 rounded-lg bg-white px-4 py-3 shadow-sm max-[720px]:flex-col max-[720px]:items-stretch ${
+      className={`relative flex min-h-[108px] items-center justify-between gap-4 rounded-lg border border-[#ebe4df] bg-white px-4 py-4 shadow-[0_8px_18px_rgb(42_31_26_/_6%)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgb(42_31_26_/_10%)] max-[720px]:flex-col max-[720px]:items-stretch ${
         distance ? 'pt-10' : ''
       }`}
     >
@@ -170,7 +250,31 @@ function StoreCard({ store }) {
           <h3 className="m-0 text-lg font-black leading-tight text-[#20242b]">
             {store.name || 'SVS Food'}
           </h3>
-          <div className="mt-1 grid gap-0.5">
+          <div className="mt-2 flex flex-wrap gap-2">
+            {store.onlineOrdersDelivery === '1' ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#fff4ed] px-2 py-1 text-[10px] font-black text-[var(--color-primary)]">
+                <FiTruck aria-hidden="true" />
+                Delivery
+              </span>
+            ) : null}
+            {store.onlineOrdersSelfPickup === '1' ||
+            store.onlineOrdersSelfPickUpOn === '1' ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#eef8df] px-2 py-1 text-[10px] font-black text-[#436b12]">
+                <FiShoppingBag aria-hidden="true" />
+                Pickup
+              </span>
+            ) : null}
+            <span
+              className={`inline-flex rounded-full px-2 py-1 text-[10px] font-black ${
+                openNow
+                  ? 'bg-[#e8f8ee] text-[#137a35]'
+                  : 'bg-[#f2f2f2] text-[#686d75]'
+              }`}
+            >
+              {openNow ? 'Open now' : 'Closed now'}
+            </span>
+          </div>
+          <div className="mt-2 grid gap-0.5">
             <p className="m-0 flex items-center gap-1.5 text-[11px] font-semibold text-[#4b4f57]">
               <FiMapPin className="shrink-0" aria-hidden="true" />
               <span className="truncate">{store.address || `${store.locality}, ${store.city}`}</span>
@@ -187,7 +291,7 @@ function StoreCard({ store }) {
       </div>
 
       <button
-        className="min-h-9 shrink-0 cursor-pointer rounded-md border border-[var(--color-primary-border)] bg-white px-5 text-xs font-extrabold text-[var(--color-primary)]"
+        className="min-h-10 shrink-0 cursor-pointer rounded-md border border-[var(--color-primary-border)] bg-white px-5 text-xs font-extrabold text-[var(--color-primary)] transition hover:bg-[var(--color-primary)] hover:text-white"
         type="button"
       >
         Order Online
@@ -200,8 +304,14 @@ function Hero() {
   const [activeSlide, setActiveSlide] = useState(0)
   const [stores, setStores] = useState(fallbackStores)
   const [cities, setCities] = useState(['Jabalpur', 'Satna'])
+  const [localities, setLocalities] = useState([])
   const [selectedCity, setSelectedCity] = useState('')
   const [selectedLocation, setSelectedLocation] = useState('')
+  const [selectedLocality, setSelectedLocality] = useState('')
+  const [orderType, setOrderType] = useState('all')
+  const [vegOnly, setVegOnly] = useState(false)
+  const [openNowOnly, setOpenNowOnly] = useState(false)
+  const [sortBy, setSortBy] = useState('nearest')
   const [storesStatus, setStoresStatus] = useState('loading')
   const [locationStatus, setLocationStatus] = useState('idle')
   const [locationError, setLocationError] = useState('')
@@ -224,6 +334,21 @@ function Hero() {
 
     setStores(nextStores)
   }, [])
+
+  const loadStoresForLocality = useCallback(
+    async (locality, signal) => {
+      if (!locality?.latitude || !locality?.longitude) {
+        throw new Error('Selected locality could not be located')
+      }
+
+      await loadStoresForCoordinates({
+        lat: locality.latitude,
+        lng: locality.longitude,
+        signal,
+      })
+    },
+    [loadStoresForCoordinates],
+  )
 
   useEffect(() => {
     const controller = new AbortController()
@@ -290,15 +415,8 @@ function Hero() {
         const matchedLocality =
           localities.find((locality) => locality.cityName === selectedCity) || localities[0]
 
-        if (!matchedLocality?.latitude || !matchedLocality?.longitude) {
-          throw new Error('Selected city could not be located')
-        }
-
-        await loadStoresForCoordinates({
-          lat: matchedLocality.latitude,
-          lng: matchedLocality.longitude,
-          signal: controller.signal,
-        })
+        setLocalities(localities)
+        await loadStoresForLocality(matchedLocality, controller.signal)
         setLocationStatus('ready')
       } catch (error) {
         if (error.name !== 'AbortError') {
@@ -313,7 +431,42 @@ function Hero() {
     loadSelectedCity()
 
     return () => controller.abort()
-  }, [loadStoresForCoordinates, selectedCity])
+  }, [loadStoresForLocality, selectedCity])
+
+  useEffect(() => {
+    if (!selectedLocality) {
+      return undefined
+    }
+
+    const locality = localities.find((item) => item.localityId === selectedLocality)
+
+    if (!locality) {
+      return undefined
+    }
+
+    const controller = new AbortController()
+
+    async function loadSelectedLocality() {
+      setLocationStatus('loading')
+      setLocationError('')
+
+      try {
+        await loadStoresForLocality(locality, controller.signal)
+        setLocationStatus('ready')
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          setStores([])
+          setSelectedLocation(locality.localityName || selectedCity)
+          setLocationStatus('error')
+          setLocationError('No outlet details found for this locality')
+        }
+      }
+    }
+
+    loadSelectedLocality()
+
+    return () => controller.abort()
+  }, [loadStoresForLocality, localities, selectedCity, selectedLocality])
 
   function useCurrentLocation() {
     if (!navigator.geolocation) {
@@ -333,6 +486,7 @@ function Hero() {
             lng: String(position.coords.longitude),
           })
           setSelectedCity('')
+          setSelectedLocality('')
           setLocationStatus('ready')
         } catch {
           setLocationStatus('error')
@@ -347,7 +501,27 @@ function Hero() {
     )
   }
 
-  const visibleStores = useMemo(() => stores.slice(0, 12), [stores])
+  const filteredStores = useMemo(() => {
+    return stores
+      .filter((store) => supportsOrderType(store, orderType))
+      .filter((store) => !vegOnly || store.pureVegetarian !== '0')
+      .filter((store) => !openNowOnly || isStoreOpenNow(store))
+      .sort((first, second) => {
+        if (sortBy === 'name') {
+          return (first.locality || first.name || '').localeCompare(
+            second.locality || second.name || '',
+          )
+        }
+
+        if (sortBy === 'open') {
+          return Number(isStoreOpenNow(second)) - Number(isStoreOpenNow(first))
+        }
+
+        return getDistanceValue(first) - getDistanceValue(second)
+      })
+  }, [openNowOnly, orderType, sortBy, stores, vegOnly])
+
+  const visibleStores = useMemo(() => filteredStores.slice(0, 12), [filteredStores])
 
   return (
     <main className="min-h-[calc(100vh-74px)] bg-[#f1f0f4] pb-12">
@@ -414,18 +588,21 @@ function Hero() {
             <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary-soft)] text-[28px] text-[var(--color-primary)]">
               <FiMapPin aria-hidden="true" />
             </span>
-            <div>
+            <div className="min-w-0">
               <h2 className="m-0 mb-4 text-2xl font-black text-[#20242b]">
                 Find SVS Food stores near you
               </h2>
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3 rounded-xl border border-[#f0e4dc] bg-[#fffaf7] p-3">
                 <button
                   className={`${controlButton} border-[var(--color-primary-border)] text-[var(--color-primary)]`}
                   onClick={useCurrentLocation}
+                  disabled={locationStatus === 'loading'}
                   type="button"
                 >
                   <FiNavigation aria-hidden="true" />
-                  Use my current location
+                  {locationStatus === 'loading'
+                    ? 'Finding stores...'
+                    : 'Use my current location'}
                 </button>
                 <span className="text-xs font-black uppercase text-[#544740]">
                   or
@@ -434,7 +611,11 @@ function Hero() {
                   <span className="sr-only">Select City</span>
                   <select
                     className="w-full cursor-pointer appearance-none border-0 bg-transparent pr-7 text-xs font-extrabold text-[#363a40] outline-none"
-                    onChange={(event) => setSelectedCity(event.target.value)}
+                    onChange={(event) => {
+                      setSelectedCity(event.target.value)
+                      setSelectedLocality('')
+                      setSelectedLocation('')
+                    }}
                     value={selectedCity}
                   >
                     <option value="">Select City</option>
@@ -449,10 +630,23 @@ function Hero() {
                     aria-hidden="true"
                   />
                 </label>
-                <button className={selectButton} disabled type="button">
-                  Select Locality
+                <label className={`${selectButton} relative cursor-pointer`}>
+                  <span className="sr-only">Select Locality</span>
+                  <select
+                    className="w-full cursor-pointer appearance-none border-0 bg-transparent pr-7 text-xs font-extrabold text-[#363a40] outline-none disabled:cursor-not-allowed"
+                    disabled={!selectedCity || localities.length === 0}
+                    onChange={(event) => setSelectedLocality(event.target.value)}
+                    value={selectedLocality}
+                  >
+                    <option value="">All localities</option>
+                    {localities.map((locality) => (
+                      <option key={locality.localityId} value={locality.localityId}>
+                        {locality.localityName}
+                      </option>
+                    ))}
+                  </select>
                   <FiChevronDown aria-hidden="true" />
-                </button>
+                </label>
               </div>
               <p className="mt-3 mb-0 flex flex-wrap items-center gap-2 text-xs font-extrabold text-[#3b3e45]">
                 <FiMapPin className="text-[var(--color-primary)]" aria-hidden="true" />
@@ -462,6 +656,8 @@ function Hero() {
                   onClick={() => {
                     setSelectedCity('')
                     setSelectedLocation('')
+                    setSelectedLocality('')
+                    setLocalities([])
                     setStores(fallbackStores)
                     setLocationStatus('idle')
                     setLocationError('')
@@ -485,42 +681,93 @@ function Hero() {
           </div>
         </div>
 
-        <div className="border-t border-[#eee5e0] bg-[#f4f1ef] px-6 pt-4 pb-3 max-[540px]:p-4">
-          <div className="flex items-center justify-between gap-4 max-[820px]:flex-col max-[820px]:items-stretch">
+        <div className="border-t border-[#eee5e0] bg-[#f6f2ef] px-6 pt-4 pb-4 max-[540px]:p-4">
+          <div className="flex items-center justify-between gap-4 max-[920px]:flex-col max-[920px]:items-stretch">
             <div className="flex flex-wrap gap-3">
-              <button className={controlButton} type="button">
-                Order Type
-                <FiChevronDown aria-hidden="true" />
-              </button>
-              <button className={controlButton} type="button">
+              <label className={`${controlButton} relative cursor-pointer`}>
+                <span>Order Type</span>
+                <select
+                  className="cursor-pointer appearance-none border-0 bg-transparent pr-7 text-xs font-extrabold text-[#363a40] outline-none"
+                  onChange={(event) => setOrderType(event.target.value)}
+                  value={orderType}
+                >
+                  {orderTypeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <FiChevronDown
+                  className="pointer-events-none absolute right-3"
+                  aria-hidden="true"
+                />
+              </label>
+              <button
+                className={`${controlButton} ${
+                  vegOnly
+                    ? 'border-[#80b339] bg-[#eef8df] text-[#426b12]'
+                    : ''
+                }`}
+                onClick={() => setVegOnly((value) => !value)}
+                type="button"
+                aria-pressed={vegOnly}
+              >
                 Veg Only
               </button>
-              <button className={controlButton} type="button">
+              <button
+                className={`${controlButton} ${
+                  openNowOnly
+                    ? 'border-[#80b339] bg-[#eef8df] text-[#426b12]'
+                    : ''
+                }`}
+                onClick={() => setOpenNowOnly((value) => !value)}
+                type="button"
+                aria-pressed={openNowOnly}
+              >
                 Open Now
               </button>
-              <button className={controlButton} type="button">
-                Newly Opened
+              <button
+                className={controlButton}
+                onClick={() => {
+                  setOrderType('all')
+                  setVegOnly(false)
+                  setOpenNowOnly(false)
+                  setSortBy('nearest')
+                }}
+                type="button"
+              >
+                Clear Filters
               </button>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-[13px] font-black text-[#343840]">
                 Sort By:
               </span>
-              <button
-                className={`${controlButton} min-w-[138px] justify-between`}
-                type="button"
-              >
-                Nearest
-                <FiChevronDown aria-hidden="true" />
-              </button>
+              <label className={`${controlButton} relative min-w-[150px] cursor-pointer justify-between`}>
+                <select
+                  className="w-full cursor-pointer appearance-none border-0 bg-transparent pr-7 text-xs font-extrabold text-[#363a40] outline-none"
+                  onChange={(event) => setSortBy(event.target.value)}
+                  value={sortBy}
+                >
+                  {sortOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <FiChevronDown
+                  className="pointer-events-none absolute right-3"
+                  aria-hidden="true"
+                />
+              </label>
             </div>
           </div>
 
           <p className="mt-3 mb-3 flex items-center gap-2 text-sm text-[#52565d]">
             <FiSearch aria-hidden="true" />
-            <strong>{stores.length} Results</strong>{' '}
+            <strong>{filteredStores.length} Results</strong>{' '}
             found
-            {stores.length > visibleStores.length ? (
+            {filteredStores.length > visibleStores.length ? (
               <span>showing first {visibleStores.length}</span>
             ) : null}
             {storesStatus === 'loading' ? <span>loading live store data...</span> : null}
@@ -530,11 +777,35 @@ function Hero() {
             ) : null}
           </p>
 
-          <div className="grid grid-cols-3 gap-6 max-[1100px]:grid-cols-2 max-[820px]:grid-cols-1">
-            {visibleStores.map((store) => (
-              <StoreCard key={store.id || store.slug || store.address || store.city} store={store} />
-            ))}
-          </div>
+          {visibleStores.length ? (
+            <div className="grid grid-cols-3 gap-6 max-[1100px]:grid-cols-2 max-[820px]:grid-cols-1">
+              {visibleStores.map((store) => (
+                <StoreCard key={store.id || store.slug || store.address || store.city} store={store} />
+              ))}
+            </div>
+          ) : (
+            <div className="grid min-h-[180px] place-items-center rounded-lg border border-dashed border-[#dccfc7] bg-white p-6 text-center">
+              <div>
+                <h3 className="m-0 text-xl font-black text-[#20242b]">
+                  No stores match these filters
+                </h3>
+                <p className="mx-auto mt-2 mb-4 max-w-[360px] text-sm leading-[1.5] text-[#666b73]">
+                  Try a different city, locality, order type, or clear the active filters.
+                </p>
+                <button
+                  className="min-h-10 cursor-pointer rounded-md border-0 bg-[var(--color-primary)] px-5 text-xs font-black text-white"
+                  onClick={() => {
+                    setOrderType('all')
+                    setVegOnly(false)
+                    setOpenNowOnly(false)
+                  }}
+                  type="button"
+                >
+                  Clear Filters
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </section>
       <OurMenu />

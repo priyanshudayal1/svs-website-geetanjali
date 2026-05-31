@@ -10,7 +10,6 @@ import {
 import { useNavigate, useSearchParams } from "react-router-dom";
 import comboBannerFood from "../assets/combo-banner-food.png";
 import { useMenuFeed } from "../hooks/useMenuFeed";
-import OurMenu from "./OurMenu";
 
 const ratingOptions = [4.5, 4, 3];
 const spicyOptions = ["Mild", "Medium", "Hot"];
