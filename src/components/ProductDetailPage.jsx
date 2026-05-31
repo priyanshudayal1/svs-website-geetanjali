@@ -277,11 +277,6 @@ function ProductDetailPage({ addToCart }) {
                 Loading latest item details...
               </p>
             ) : null}
-            {detailStatus === 'error' ? (
-              <p className="mt-3 mb-0 text-xs font-bold text-[#8d3b20]">
-                Latest details could not be loaded, showing saved menu data.
-              </p>
-            ) : null}
             <p className="mt-5 mb-6 max-w-[480px] text-sm leading-[1.7] font-medium text-[#545a63]">
               {liveItem.description || liveItem.category}
             </p>
