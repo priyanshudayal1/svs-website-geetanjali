@@ -1,0 +1,36 @@
+.page-shell {
+  align-items: center;
+  display: flex;
+  min-height: calc(100vh - 74px);
+  padding: 64px 24px;
+}
+
+.route-panel {
+  margin: 0 auto;
+  max-width: 760px;
+  text-align: center;
+}
+
+.route-panel p {
+  color: #f06423;
+  font-size: 13px;
+  font-weight: 900;
+  margin: 0 0 12px;
+  text-transform: uppercase;
+}
+
+.route-panel h1 {
+  color: #3f2016;
+  font-size: clamp(40px, 7vw, 76px);
+  line-height: 0.96;
+  margin: 0;
+}
+
+.route-panel span {
+  color: #6d564d;
+  display: block;
+  font-size: 18px;
+  line-height: 1.6;
+  margin: 22px auto 0;
+  max-width: 560px;
+}
