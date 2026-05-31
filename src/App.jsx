@@ -1,14 +1,9 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import Footer from './components/Footer'
 import Header from './components/Header'
 import Hero from './components/Hero'
-import './App.css'
 
 const pages = {
-  home: {
-    title: 'SVS Food',
-    eyebrow: 'Fresh food, fast service',
-    text: 'Choose delivery or dine-in and order your favorites from SVS Food.',
-  },
   about: {
     title: 'About Us',
     eyebrow: 'Made for everyday cravings',
@@ -33,11 +28,17 @@ const pages = {
 
 function Page({ page }) {
   return (
-    <main className="page-shell">
-      <section className="route-panel">
-        <p>{page.eyebrow}</p>
-        <h1>{page.title}</h1>
-        <span>{page.text}</span>
+    <main className="flex min-h-[calc(100vh-74px)] items-center px-6 py-16">
+      <section className="mx-auto max-w-[760px] text-center">
+        <p className="m-0 mb-3 text-[13px] font-black uppercase text-[#f06423]">
+          {page.eyebrow}
+        </p>
+        <h1 className="m-0 text-[clamp(40px,7vw,76px)] leading-[0.96] text-[#3f2016]">
+          {page.title}
+        </h1>
+        <span className="mx-auto mt-[22px] block max-w-[560px] text-lg leading-[1.6] text-[#6d564d]">
+          {page.text}
+        </span>
       </section>
     </main>
   )
@@ -54,6 +55,7 @@ function App() {
         <Route path="/partner" element={<Page page={pages.partner} />} />
         <Route path="/careers" element={<Page page={pages.careers} />} />
       </Routes>
+      <Footer />
     </BrowserRouter>
   )
 }
