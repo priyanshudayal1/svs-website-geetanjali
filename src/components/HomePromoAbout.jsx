@@ -151,7 +151,7 @@ function OffersCarousel() {
 function HomePromoAbout() {
   return (
     <>
-      <section className="bg-[#fffaf7] px-4 pt-10 pb-8">
+      <section className="bg-[var(--color-page-bg)] px-4 pt-10 pb-8">
         <div className="mx-auto max-w-[1080px]">
           <SectionHeading>Exclusive Offers For You</SectionHeading>
 
@@ -159,7 +159,7 @@ function HomePromoAbout() {
         </div>
       </section>
 
-      <section className="bg-[#f6ede6] px-4 py-12">
+      <section className="bg-[var(--color-page-bg)] px-4 py-12">
         <div className="mx-auto grid max-w-[1080px] grid-cols-[0.9fr_1.1fr] items-center gap-10 max-[820px]:grid-cols-1">
           <div className="relative overflow-hidden rounded-lg bg-[#15191f] shadow-[0_20px_44px_rgb(57_32_20_/_16%)]">
             <img
@@ -217,7 +217,7 @@ function HomePromoAbout() {
         </div>
       </section>
 
-      <section className="bg-white px-4 py-10">
+      <section className="bg-[var(--color-page-bg)] px-4 py-10">
         <div className="mx-auto grid max-w-[1080px] grid-cols-[1fr_auto] items-center gap-8 rounded-lg border border-[#f0ded5] bg-[#101820] px-8 py-7 text-white shadow-[0_16px_40px_rgb(16_24_32_/_14%)] max-[760px]:grid-cols-1 max-[560px]:px-5">
           <div className="flex items-start gap-4 max-[560px]:flex-col">
             <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#f16a34] text-xl">

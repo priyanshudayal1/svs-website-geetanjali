@@ -17,7 +17,7 @@ function CartPage({ cartItems, updateCartQuantity, removeFromCart }) {
   const totalAmount = Math.max(0, itemTotal + deliveryFee + packagingFee - discount)
 
   return (
-    <main className="bg-white px-6 py-10 text-[#15181d] max-[720px]:px-4">
+    <main className="bg-[var(--color-page-bg)] px-6 py-10 text-[#15181d] max-[720px]:px-4">
       <section className="mx-auto max-w-[1120px]">
         <h1 className="m-0 mb-8 text-[clamp(34px,4vw,48px)] leading-none font-black">
           Your Cart

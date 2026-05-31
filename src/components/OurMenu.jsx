@@ -30,7 +30,7 @@ function OurMenu() {
   }
 
   return (
-    <section className="bg-white px-4 pt-5 pb-6">
+    <section className="bg-[var(--color-page-bg)] px-4 pt-5 pb-6">
       <div className="mx-auto max-w-[1220px]">
         <div className="mb-4 flex items-center justify-center gap-3">
           <div className="h-px w-10 rounded-full bg-[#f16a34]" />

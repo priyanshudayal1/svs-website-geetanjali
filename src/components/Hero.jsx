@@ -227,7 +227,7 @@ function StoreCard({ store }) {
 
   return (
     <article
-      className={`relative flex min-h-[108px] items-center justify-between gap-4 rounded-lg border border-[#ebe4df] bg-white px-4 py-4 shadow-[0_8px_18px_rgb(42_31_26_/_6%)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgb(42_31_26_/_10%)] max-[720px]:flex-col max-[720px]:items-stretch ${
+      className={`relative grid min-h-[108px] grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-lg border border-[#ebe4df] bg-white px-4 py-4 shadow-[0_8px_18px_rgb(42_31_26_/_6%)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgb(42_31_26_/_10%)] max-[1280px]:grid-cols-1 max-[1280px]:items-stretch ${
         distance ? 'pt-10' : ''
       }`}
     >
@@ -275,12 +275,14 @@ function StoreCard({ store }) {
             </span>
           </div>
           <div className="mt-2 grid gap-0.5">
-            <p className="m-0 flex items-center gap-1.5 text-[11px] font-semibold text-[#4b4f57]">
-              <FiMapPin className="shrink-0" aria-hidden="true" />
-              <span className="truncate">{store.address || `${store.locality}, ${store.city}`}</span>
+            <p className="m-0 flex min-w-0 items-start gap-1.5 text-[11px] leading-snug font-semibold text-[#4b4f57]">
+              <FiMapPin className="mt-0.5 shrink-0" aria-hidden="true" />
+              <span className="min-w-0 [overflow-wrap:anywhere]">
+                {store.address || `${store.locality}, ${store.city}`}
+              </span>
             </p>
-            <p className="m-0 flex items-center gap-1.5 text-[11px] font-semibold text-[#4b4f57]">
-              <FiClock className="shrink-0" aria-hidden="true" />
+            <p className="m-0 flex min-w-0 items-start gap-1.5 text-[11px] leading-snug font-semibold text-[#4b4f57]">
+              <FiClock className="mt-0.5 shrink-0" aria-hidden="true" />
               <span>
                 <strong className="text-[#30343a]">Open from</strong>{' '}
                 {formatStoreHours(store)}
@@ -291,7 +293,7 @@ function StoreCard({ store }) {
       </div>
 
       <button
-        className="min-h-10 shrink-0 cursor-pointer rounded-md border border-[var(--color-primary-border)] bg-white px-5 text-xs font-extrabold text-[var(--color-primary)] transition hover:bg-[var(--color-primary)] hover:text-white"
+        className="min-h-10 w-full max-w-[164px] cursor-pointer justify-self-end rounded-md border border-[var(--color-primary-border)] bg-white px-5 text-xs font-extrabold text-[var(--color-primary)] transition hover:bg-[var(--color-primary)] hover:text-white max-[1280px]:max-w-none"
         type="button"
       >
         Order Online
@@ -524,7 +526,7 @@ function Hero() {
   const visibleStores = useMemo(() => filteredStores.slice(0, 12), [filteredStores])
 
   return (
-    <main className="min-h-[calc(100vh-74px)] bg-[#f1f0f4] pb-12">
+    <main className="min-h-[calc(100vh-74px)] bg-[var(--color-page-bg)] pb-12">
       <section
         className="relative min-h-[350px] overflow-hidden rounded-b-[64px] bg-[#120905] before:absolute before:inset-0 before:z-[1] before:bg-[linear-gradient(90deg,rgb(0_0_0_/_88%)_0%,rgb(0_0_0_/_62%)_33%,rgb(0_0_0_/_8%)_70%)] max-[540px]:min-h-[430px] max-[540px]:rounded-b-[36px]"
       >

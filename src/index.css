@@ -6,6 +6,7 @@
   --color-primary-soft: #fff0e9;
   --color-primary-border: #ffb498;
   --color-primary-shadow: 241 106 52;
+  --color-page-bg: #fff8f3;
 
   color: #3f2016;
   font-family: Archivo, Arial, Helvetica, sans-serif;
@@ -18,7 +19,7 @@
 }
 
 body {
-  background: #fff8f3;
+  background: var(--color-page-bg);
   margin: 0;
   min-width: 320px;
 }

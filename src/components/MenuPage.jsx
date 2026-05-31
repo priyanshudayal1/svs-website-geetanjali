@@ -186,7 +186,7 @@ function MenuPage({ addToCart, cartItems }) {
   }
 
   return (
-    <main className="bg-[#f1f0f4]">
+    <main className="bg-[var(--color-page-bg)]">
       <section className="mx-auto max-w-[1240px] px-6 py-10 max-[720px]:px-4 max-[720px]:py-7">
         <div className="mb-7 flex items-start justify-between gap-5 max-[820px]:flex-col">
           <div>

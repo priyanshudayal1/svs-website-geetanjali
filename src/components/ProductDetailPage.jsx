@@ -170,7 +170,7 @@ function ProductDetailPage({ addToCart }) {
 
   if (!liveItem) {
     return (
-      <main className="grid min-h-[calc(100vh-74px)] place-items-center bg-[#f8f5f2] px-6 py-16 text-center">
+      <main className="grid min-h-[calc(100vh-74px)] place-items-center bg-[var(--color-page-bg)] px-6 py-16 text-center">
         <section className="max-w-[520px]">
           <h1 className="m-0 text-4xl font-black text-[#171b21]">Item not found</h1>
           <p className="mt-3 mb-7 text-sm leading-[1.6] text-[#62666d]">
@@ -214,7 +214,7 @@ function ProductDetailPage({ addToCart }) {
   }
 
   return (
-    <main className="bg-[#fbfaf8] px-6 py-8 max-[720px]:px-4">
+    <main className="bg-[var(--color-page-bg)] px-6 py-8 max-[720px]:px-4">
       <section className="mx-auto max-w-[1180px]">
         <nav className="mb-5 flex flex-wrap items-center gap-2 text-[12px] font-bold text-[#8a8f96]">
           <Link className="text-[#8a8f96] no-underline hover:text-[var(--color-primary)]" to="/">

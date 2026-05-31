@@ -25,7 +25,7 @@ const pages = {
 
 function Page({ page }) {
   return (
-    <main className="flex min-h-[calc(100vh-74px)] items-center px-6 py-16">
+    <main className="flex min-h-[calc(100vh-74px)] items-center bg-[var(--color-page-bg)] px-6 py-16">
       <section className="mx-auto max-w-[760px] text-center">
         <p className="m-0 mb-3 text-[13px] font-black uppercase text-[var(--color-primary)]">
           {page.eyebrow}

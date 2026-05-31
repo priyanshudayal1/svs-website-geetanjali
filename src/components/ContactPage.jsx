@@ -53,7 +53,7 @@ const inputClass =
 
 function ContactPage() {
   return (
-    <main className="bg-white px-6 py-12 text-[#111318] max-[720px]:px-4">
+    <main className="bg-[var(--color-page-bg)] px-6 py-12 text-[#111318] max-[720px]:px-4">
       <section className="mx-auto max-w-[1120px]">
         <div className="mb-8">
           <h1 className="m-0 text-[clamp(34px,4.2vw,54px)] leading-none font-black tracking-normal">

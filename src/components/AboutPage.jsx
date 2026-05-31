@@ -47,7 +47,7 @@ const aboutCopy = [
 
 function AboutPage() {
   return (
-    <main className="bg-[#fff8f3] px-6 py-10 max-[720px]:px-4">
+    <main className="bg-[var(--color-page-bg)] px-6 py-10 max-[720px]:px-4">
       <section className="mx-auto max-w-[1180px] overflow-hidden rounded-lg border border-[#f1ddd3] bg-white shadow-[0_18px_44px_rgb(79_42_24_/_10%)]">
         <div className="p-6 max-[720px]:p-4">
           <div className="relative grid min-h-[380px] place-items-center overflow-hidden rounded-lg bg-[#22120b] text-center text-white max-[720px]:min-h-[330px]">

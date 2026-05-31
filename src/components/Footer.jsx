@@ -43,7 +43,7 @@ function footerPath(label) {
 
 function Footer() {
   return (
-    <footer className="bg-gradient-to-b from-[#f1f0f4] to-[#fff8f3] px-6 pt-12 pb-14 max-[720px]:px-4 max-[720px]:pt-8 max-[720px]:pb-10">
+    <footer className="bg-[var(--color-page-bg)] px-6 pt-12 pb-14 max-[720px]:px-4 max-[720px]:pt-8 max-[720px]:pb-10">
       <div className="mx-auto max-w-[1240px] overflow-hidden rounded-lg border border-[var(--color-primary-border)] bg-[var(--color-primary)] text-white shadow-[0_20px_42px_rgb(var(--color-primary-shadow)_/_24%)]">
         <div className="grid grid-cols-[minmax(220px,1.5fr)_repeat(3,minmax(130px,0.8fr))_minmax(180px,1fr)] gap-11 px-14 pt-[34px] pb-[30px] max-[1080px]:grid-cols-[1.4fr_1fr_1fr] max-[720px]:grid-cols-1 max-[720px]:gap-7 max-[720px]:p-7 max-[720px]:px-[22px]">
           <div>
