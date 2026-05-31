@@ -1,28 +1,37 @@
-import { useMemo, useState } from 'react'
-import { FiPlus, FiSearch, FiShoppingBag, FiSliders, FiStar, FiX } from 'react-icons/fi'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import comboBannerFood from '../assets/combo-banner-food.png'
-import { useMenuFeed } from '../hooks/useMenuFeed'
-import OurMenu from './OurMenu'
+import { useMemo, useState } from "react";
+import {
+  FiPlus,
+  FiSearch,
+  FiShoppingBag,
+  FiSliders,
+  FiStar,
+  FiX,
+} from "react-icons/fi";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import comboBannerFood from "../assets/combo-banner-food.png";
+import { useMenuFeed } from "../hooks/useMenuFeed";
+import OurMenu from "./OurMenu";
 
-const ratingOptions = [4.5, 4, 3]
-const spicyOptions = ['Mild', 'Medium', 'Hot']
+const ratingOptions = [4.5, 4, 3];
+const spicyOptions = ["Mild", "Medium", "Hot"];
 
 function titleMatches(item, query) {
-  const value = query.trim().toLowerCase()
+  const value = query.trim().toLowerCase();
 
   if (!value) {
-    return true
+    return true;
   }
 
-  return `${item.name} ${item.description} ${item.category}`.toLowerCase().includes(value)
+  return `${item.name} ${item.description} ${item.category}`
+    .toLowerCase()
+    .includes(value);
 }
 
 function MenuCard({ item, count, onAdd }) {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   function openItem() {
-    navigate(`/order/${item.slug}`)
+    navigate(`/order/${item.slug}`);
   }
 
   return (
@@ -32,16 +41,19 @@ function MenuCard({ item, count, onAdd }) {
       tabIndex={0}
       onClick={openItem}
       onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault()
-          openItem()
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openItem();
         }
       }}
     >
       <div className="relative grid h-[156px] shrink-0 place-items-center overflow-hidden bg-white px-4 pt-4">
         {item.rating ? (
           <span className="absolute top-3 right-3 inline-flex items-center gap-1 text-[11px] font-black text-[#42342e]">
-            <FiStar className="fill-[#ffbd2e] text-[#ffbd2e]" aria-hidden="true" />
+            <FiStar
+              className="fill-[#ffbd2e] text-[#ffbd2e]"
+              aria-hidden="true"
+            />
             {item.rating.toFixed(1)}
           </span>
         ) : null}
@@ -64,22 +76,24 @@ function MenuCard({ item, count, onAdd }) {
         </div>
 
         <div className="mt-auto flex items-center justify-between gap-3">
-          <strong className="text-base leading-none text-[#111318]">₹{item.price}</strong>
+          <strong className="text-base leading-none text-[#111318]">
+            ₹{item.price}
+          </strong>
           <button
             className="inline-flex min-h-9 min-w-[78px] cursor-pointer items-center justify-center gap-1.5 rounded-md border-0 bg-[var(--color-primary)] px-3 text-xs font-black text-white shadow-[0_9px_18px_rgb(var(--color-primary-shadow)_/_22%)] transition hover:-translate-y-px hover:bg-[#df5522]"
             type="button"
             onClick={(event) => {
-              event.stopPropagation()
-              onAdd()
+              event.stopPropagation();
+              onAdd();
             }}
           >
-            {count ? count : 'Add'}
+            {count ? count : "Add"}
             <FiPlus aria-hidden="true" />
           </button>
         </div>
       </div>
     </article>
-  )
+  );
 }
 
 function FilterCheckbox({ label, checked, onChange }) {
@@ -93,34 +107,37 @@ function FilterCheckbox({ label, checked, onChange }) {
       />
       {label}
     </label>
-  )
+  );
 }
 
 function MenuPage({ addToCart, cartItems }) {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const { allItems, categories, error, isLoading } = useMenuFeed()
-  const selectedCategory = searchParams.get('category') || 'all'
-  const [query, setQuery] = useState('')
-  const [vegOnly, setVegOnly] = useState(false)
-  const [maxPrice, setMaxPrice] = useState(null)
-  const [rating, setRating] = useState(0)
-  const [spicy, setSpicy] = useState([])
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { allItems, categories, error, isLoading } = useMenuFeed();
+  const selectedCategory = searchParams.get("category") || "all";
+  const [query, setQuery] = useState("");
+  const [vegOnly, setVegOnly] = useState(false);
+  const [maxPrice, setMaxPrice] = useState(null);
+  const [rating, setRating] = useState(0);
+  const [spicy, setSpicy] = useState([]);
 
-  const categoryTabs = useMemo(() => [{ name: 'All', slug: 'all' }, ...categories], [categories])
+  const categoryTabs = useMemo(
+    () => [{ name: "All", slug: "all" }, ...categories],
+    [categories],
+  );
   const menuMaxPrice = useMemo(
     () => Math.max(500, ...allItems.map((item) => item.price || 0)),
     [allItems],
-  )
-  const activeMaxPrice = maxPrice ?? menuMaxPrice
+  );
+  const activeMaxPrice = maxPrice ?? menuMaxPrice;
 
   const filteredItems = useMemo(() => {
     return allItems.filter((item) => {
       const categoryMatch =
-        selectedCategory === 'all' || item.categorySlug === selectedCategory
-      const priceMatch = item.price <= activeMaxPrice
-      const vegMatch = !vegOnly || item.veg !== false
-      const ratingMatch = !rating || item.rating >= rating
-      const spicyMatch = spicy.length === 0 || spicy.includes(item.spicy)
+        selectedCategory === "all" || item.categorySlug === selectedCategory;
+      const priceMatch = item.price <= activeMaxPrice;
+      const vegMatch = !vegOnly || item.veg !== false;
+      const ratingMatch = !rating || item.rating >= rating;
+      const spicyMatch = spicy.length === 0 || spicy.includes(item.spicy);
 
       return (
         categoryMatch &&
@@ -129,22 +146,30 @@ function MenuPage({ addToCart, cartItems }) {
         ratingMatch &&
         spicyMatch &&
         titleMatches(item, query)
-      )
-    })
-  }, [activeMaxPrice, allItems, query, rating, selectedCategory, spicy, vegOnly])
+      );
+    });
+  }, [
+    activeMaxPrice,
+    allItems,
+    query,
+    rating,
+    selectedCategory,
+    spicy,
+    vegOnly,
+  ]);
 
-  const cartTotal = cartItems.reduce((total, item) => total + item.quantity, 0)
+  const cartTotal = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   function selectCategory(slug) {
-    setSearchParams(slug === 'all' ? {} : { category: slug })
+    setSearchParams(slug === "all" ? {} : { category: slug });
   }
 
   function clearFilters() {
-    setQuery('')
-    setVegOnly(false)
-    setMaxPrice(null)
-    setRating(0)
-    setSpicy([])
+    setQuery("");
+    setVegOnly(false);
+    setMaxPrice(null);
+    setRating(0);
+    setSpicy([]);
   }
 
   function toggleSpicy(level) {
@@ -152,19 +177,17 @@ function MenuPage({ addToCart, cartItems }) {
       current.includes(level)
         ? current.filter((item) => item !== level)
         : [...current, level],
-    )
+    );
   }
 
   function getItemCount(item) {
     return cartItems
       .filter((cartItem) => cartItem.slug === item.slug)
-      .reduce((total, cartItem) => total + cartItem.quantity, 0)
+      .reduce((total, cartItem) => total + cartItem.quantity, 0);
   }
 
   return (
     <main className="bg-[#f1f0f4]">
-      <OurMenu />
-
       <section className="mx-auto max-w-[1240px] px-6 py-10 max-[720px]:px-4 max-[720px]:py-7">
         <div className="mb-7 flex items-start justify-between gap-5 max-[820px]:flex-col">
           <div>
@@ -192,7 +215,7 @@ function MenuPage({ addToCart, cartItems }) {
                 className="inline-flex cursor-pointer border-0 bg-transparent p-0 text-[#868b94]"
                 aria-label="Clear search"
                 type="button"
-                onClick={() => setQuery('')}
+                onClick={() => setQuery("")}
               >
                 <FiX aria-hidden="true" />
               </button>
@@ -202,14 +225,14 @@ function MenuPage({ addToCart, cartItems }) {
 
         <div className="mb-6 flex gap-3 overflow-x-auto pb-1">
           {categoryTabs.map((category) => {
-            const active = selectedCategory === category.slug
+            const active = selectedCategory === category.slug;
 
             return (
               <button
                 className={`min-h-11 shrink-0 cursor-pointer rounded-full border px-7 text-xs font-black transition ${
                   active
-                    ? 'border-[var(--color-primary)] bg-[var(--color-primary)] text-white shadow-[0_12px_24px_rgb(var(--color-primary-shadow)_/_18%)]'
-                    : 'border-[#e5ddd7] bg-white text-[#323741] hover:border-[var(--color-primary-border)] hover:text-[var(--color-primary)]'
+                    ? "border-[var(--color-primary)] bg-[var(--color-primary)] text-white shadow-[0_12px_24px_rgb(var(--color-primary-shadow)_/_18%)]"
+                    : "border-[#e5ddd7] bg-white text-[#323741] hover:border-[var(--color-primary-border)] hover:text-[var(--color-primary)]"
                 }`}
                 key={category.slug}
                 type="button"
@@ -217,7 +240,7 @@ function MenuPage({ addToCart, cartItems }) {
               >
                 {category.name}
               </button>
-            )
+            );
           })}
         </div>
 
@@ -267,13 +290,17 @@ function MenuPage({ addToCart, cartItems }) {
               </div>
 
               <div className="grid gap-3 border-t border-[#f0e8e2] pt-5">
-                <h3 className="m-0 text-xs font-black text-[#20242b]">Rating</h3>
+                <h3 className="m-0 text-xs font-black text-[#20242b]">
+                  Rating
+                </h3>
                 {ratingOptions.map((option) => (
                   <FilterCheckbox
                     key={option}
                     label={`${option} & above`}
                     checked={rating === option}
-                    onChange={() => setRating((value) => (value === option ? 0 : option))}
+                    onChange={() =>
+                      setRating((value) => (value === option ? 0 : option))
+                    }
                   />
                 ))}
               </div>
@@ -295,10 +322,15 @@ function MenuPage({ addToCart, cartItems }) {
           <div>
             <div className="mb-4 flex items-center justify-between gap-3">
               <p className="m-0 text-sm font-black text-[#424750]">
-                {isLoading ? 'Refreshing live menu...' : `${filteredItems.length} items found`}
+                {isLoading
+                  ? "Refreshing live menu..."
+                  : `${filteredItems.length} items found`}
               </p>
               <div className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#eaded6] bg-white px-4 text-sm font-black text-[#20242b] shadow-sm">
-                <FiShoppingBag className="text-[var(--color-primary)]" aria-hidden="true" />
+                <FiShoppingBag
+                  className="text-[var(--color-primary)]"
+                  aria-hidden="true"
+                />
                 {cartTotal} added
               </div>
             </div>
@@ -322,7 +354,9 @@ function MenuPage({ addToCart, cartItems }) {
             ) : (
               <div className="grid min-h-[260px] place-items-center rounded-lg border border-dashed border-[#dfcfc6] bg-white p-8 text-center">
                 <div>
-                  <h2 className="m-0 text-2xl font-black text-[#20242b]">No items found</h2>
+                  <h2 className="m-0 text-2xl font-black text-[#20242b]">
+                    No items found
+                  </h2>
                   <p className="mx-auto mt-2 mb-5 max-w-[360px] text-sm leading-[1.6] text-[#666b73]">
                     Try a different category, search term, or filter.
                   </p>
@@ -357,7 +391,7 @@ function MenuPage({ addToCart, cartItems }) {
             <button
               className="relative z-[1] h-[66px] min-w-[246px] cursor-pointer rounded-[13px] border-0 bg-[#ff4b16] px-8 text-[24px] font-black text-white shadow-[0_4px_10px_rgb(0_0_0_/_18%)] transition hover:bg-[#e95b23] max-[1040px]:h-14 max-[1040px]:min-w-[200px] max-[1040px]:text-xl max-[720px]:h-12 max-[720px]:min-w-[170px] max-[720px]:text-base max-[560px]:mx-auto"
               type="button"
-              onClick={() => selectCategory('party-combos')}
+              onClick={() => selectCategory("party-combos")}
             >
               Make it a Combo
             </button>
@@ -365,7 +399,7 @@ function MenuPage({ addToCart, cartItems }) {
         </div>
       </section>
     </main>
-  )
+  );
 }
 
-export default MenuPage
+export default MenuPage;

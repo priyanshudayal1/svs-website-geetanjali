@@ -60,13 +60,13 @@ function OurMenu() {
 
               return (
                 <Link
-                  className="group flex h-[166px] w-[170px] shrink-0 snap-start flex-col items-center rounded-[26px] bg-[#f5f5f5] px-4 pt-4 pb-3 text-[#152235] no-underline shadow-[inset_0_1px_0_rgb(255_255_255_/_70%),0_2px_8px_rgb(20_20_24_/_6%)] transition duration-200 hover:-translate-y-1 hover:bg-[#f2f2f2] hover:shadow-[0_12px_24px_rgb(20_20_24_/_10%)] sm:h-[170px] sm:w-[184px]"
+                  className="group flex h-[166px] w-[170px] shrink-0 snap-start flex-col items-center rounded-[26px] bg-[#f3f3f3] px-4 pt-4 pb-3 text-[#152235] no-underline shadow-[inset_0_1px_0_rgb(255_255_255_/_70%),0_2px_8px_rgb(20_20_24_/_6%)] transition duration-200 hover:-translate-y-1 hover:bg-[#eeeeee] hover:shadow-[0_12px_24px_rgb(20_20_24_/_10%)] sm:h-[170px] sm:w-[184px]"
                   to={`/order?category=${liveCategory?.slug || item.slug}`}
                   key={item.slug}
                 >
-                  <div className="flex h-[108px] w-[130px] shrink-0 items-center justify-center overflow-hidden bg-white sm:w-[136px]">
+                  <div className="flex h-[108px] w-[130px] shrink-0 items-center justify-center overflow-hidden bg-[#f3f3f3] sm:w-[136px]">
                     <img
-                      className="max-h-[104px] max-w-[124px] object-contain transition duration-200 group-hover:scale-[1.04] sm:max-w-[130px]"
+                      className="max-h-[104px] max-w-[124px] object-contain mix-blend-multiply transition duration-200 group-hover:scale-[1.04] sm:max-w-[130px]"
                       src={item.image}
                       alt={item.name}
                     />
