@@ -110,6 +110,17 @@ function AboutPage() {
               />
             </div>
           </div>
+
+          <div className="grid grid-cols-2 gap-x-12 gap-y-6 px-4 pb-16 max-[820px]:grid-cols-1 max-[720px]:px-0 max-[720px]:pb-10">
+            {aboutCopy.map((copy, index) => (
+              <p
+                className="m-0 text-base leading-[1.75] text-[#343840]"
+                key={index}
+              >
+                {copy}
+              </p>
+            ))}
+          </div>
         </div>
       </section>
     </main>

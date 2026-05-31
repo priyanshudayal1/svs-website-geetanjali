@@ -1,15 +1,13 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import AboutPage from './components/AboutPage'
+import ContactPage from './components/ContactPage'
 import Footer from './components/Footer'
 import Header from './components/Header'
 import Hero from './components/Hero'
+import MenuPage from './components/MenuPage'
+import ProductDetailPage from './components/ProductDetailPage'
 
 const pages = {
-  order: {
-    title: 'Order Now',
-    eyebrow: 'Your meal starts here',
-    text: 'Browse the menu, pick your service mode, and place your order.',
-  },
   partner: {
     title: 'Partner With Us',
     eyebrow: 'Grow with SVS Food',
@@ -47,7 +45,9 @@ function App() {
       <Routes>
         <Route path="/" element={<Hero />} />
         <Route path="/about" element={<AboutPage />} />
-        <Route path="/order" element={<Page page={pages.order} />} />
+        <Route path="/order" element={<MenuPage />} />
+        <Route path="/order/:itemSlug" element={<ProductDetailPage />} />
+        <Route path="/contact-us" element={<ContactPage />} />
         <Route path="/partner" element={<Page page={pages.partner} />} />
         <Route path="/careers" element={<Page page={pages.careers} />} />
       </Routes>

@@ -7,6 +7,7 @@ const navItems = [
   { label: 'Home', to: '/' },
   { label: 'About Us', to: '/about' },
   { label: 'Order Now', to: '/order' },
+  { label: 'Contact Us', to: '/contact-us' },
   { label: 'Partner With Us', to: '/partner' },
   { label: 'Careers', to: '/careers' },
 ]

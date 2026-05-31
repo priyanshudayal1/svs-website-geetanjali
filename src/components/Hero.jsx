@@ -113,7 +113,7 @@ function Hero() {
   return (
     <main className="min-h-[calc(100vh-74px)] bg-[#f1f0f4] pb-12">
       <section
-        className="relative min-h-[350px] overflow-hidden rounded-b-[36px] bg-[#120905] before:absolute before:inset-0 before:z-[1] before:bg-[linear-gradient(90deg,rgb(0_0_0_/_88%)_0%,rgb(0_0_0_/_62%)_33%,rgb(0_0_0_/_8%)_70%)] max-[540px]:min-h-[430px] max-[540px]:rounded-b-[24px]"
+        className="relative min-h-[350px] overflow-hidden rounded-b-[64px] bg-[#120905] before:absolute before:inset-0 before:z-[1] before:bg-[linear-gradient(90deg,rgb(0_0_0_/_88%)_0%,rgb(0_0_0_/_62%)_33%,rgb(0_0_0_/_8%)_70%)] max-[540px]:min-h-[430px] max-[540px]:rounded-b-[36px]"
       >
         <div className="absolute inset-0" aria-hidden="true">
           {heroSlides.map((slide, index) => (
