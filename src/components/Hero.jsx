@@ -52,7 +52,7 @@ function StoreCard({ store }) {
           </h3>
         </div>
         <a
-          className="inline-flex items-center gap-2 whitespace-nowrap text-[15px] text-[#f45a22] underline underline-offset-8"
+          className="inline-flex items-center gap-2 whitespace-nowrap text-[15px] text-[var(--color-primary)] underline underline-offset-8"
           href="/order"
         >
           View Store
@@ -74,7 +74,7 @@ function StoreCard({ store }) {
       </div>
 
       <button
-        className="min-h-12 w-full cursor-pointer rounded-lg border-0 bg-[#f76331] text-[17px] font-bold text-white"
+        className="min-h-12 w-full cursor-pointer rounded-lg border-0 bg-[var(--color-primary)] text-[17px] font-bold text-white"
         type="button"
       >
         Order Online
@@ -97,14 +97,14 @@ function Hero() {
           <h1 className="my-[22px] mb-[18px] text-[clamp(46px,6vw,74px)] leading-[0.98] max-[540px]:text-[43px]">
             Great Taste,
             <br />
-            <span className="text-[#ff5a1f]">Good Times!</span>
+            <span className="text-[var(--color-primary)]">Good Times!</span>
           </h1>
           <p className="mb-7 max-w-[420px] text-[17px] leading-[1.55] text-white/80">
             Freshly prepared pure veg food made with love and zero
             preservatives.
           </p>
           <a
-            className="inline-flex min-w-[174px] items-center gap-5 rounded-full bg-[#f45a22] px-[26px] py-[15px] text-base font-extrabold text-white no-underline"
+            className="inline-flex min-w-[174px] items-center gap-5 rounded-full bg-[var(--color-primary)] px-[26px] py-[15px] text-base font-extrabold text-white no-underline"
             href="/order"
           >
             Order Now
@@ -126,7 +126,7 @@ function Hero() {
       <section className="relative z-[3] mx-auto mt-[-50px] w-[calc(100%-96px)] max-w-[1290px] overflow-hidden rounded-t-[22px] bg-white shadow-[0_16px_38px_rgb(53_43_36_/_12%)] max-[820px]:w-[calc(100%-32px)]">
         <div className="flex items-center justify-between gap-8 px-[34px] pt-7 pb-6 max-[1100px]:items-start max-[820px]:flex-col max-[820px]:items-stretch max-[540px]:p-6 max-[540px]:px-[18px]">
           <div className="flex items-start gap-[22px] max-[820px]:flex-col max-[820px]:items-stretch">
-            <span className="inline-flex h-[58px] w-[58px] shrink-0 items-center justify-center rounded-full bg-[#fff0e9] text-[28px] text-[#f45a22]">
+            <span className="inline-flex h-[58px] w-[58px] shrink-0 items-center justify-center rounded-full bg-[var(--color-primary-soft)] text-[28px] text-[var(--color-primary)]">
               <FiMapPin aria-hidden="true" />
             </span>
             <div>
@@ -135,7 +135,7 @@ function Hero() {
               </h2>
               <div className="flex flex-wrap items-center gap-3.5">
                 <button
-                  className={`${controlButton} border-[#ffb498] text-[#f45a22]`}
+                  className={`${controlButton} border-[var(--color-primary-border)] text-[var(--color-primary)]`}
                   type="button"
                 >
                   <FiNavigation aria-hidden="true" />
@@ -154,10 +154,10 @@ function Hero() {
                 </button>
               </div>
               <p className="mt-4 mb-0 flex flex-wrap items-center gap-2 text-[13px] font-extrabold text-[#3b3e45]">
-                <FiMapPin className="text-[#f45a22]" aria-hidden="true" />
+                <FiMapPin className="text-[var(--color-primary)]" aria-hidden="true" />
                 Satna, Madhya Pradesh
                 <button
-                  className="cursor-pointer border-0 bg-transparent p-0 pl-1.5 font-black text-[#f45a22]"
+                  className="cursor-pointer border-0 bg-transparent p-0 pl-1.5 font-black text-[var(--color-primary)]"
                   type="button"
                 >
                   Change Location
@@ -170,8 +170,8 @@ function Hero() {
             className="grid min-w-[190px] place-items-center self-stretch max-[820px]:hidden"
             aria-hidden="true"
           >
-            <div className="mb-[-3px] h-8 w-28 rounded-t-[10px] rounded-b bg-[linear-gradient(90deg,#ff7a38_0_18%,#fff3e7_18%_34%,#ff7a38_34%_52%,#fff3e7_52%_68%,#ff7a38_68%_100%)]" />
-            <div className="flex h-[76px] w-[92px] items-center justify-center rounded border-8 border-[#ffb280] bg-[#fff3e7] text-[11px] font-black uppercase text-[#f45a22]">
+            <div className="mb-[-3px] h-8 w-28 rounded-t-[10px] rounded-b bg-[linear-gradient(90deg,var(--color-primary)_0_18%,#fff3e7_18%_34%,var(--color-primary)_34%_52%,#fff3e7_52%_68%,var(--color-primary)_68%_100%)]" />
+            <div className="flex h-[76px] w-[92px] items-center justify-center rounded border-8 border-[var(--color-primary-border)] bg-[#fff3e7] text-[11px] font-black uppercase text-[var(--color-primary)]">
               <span>SVS Food</span>
             </div>
           </div>

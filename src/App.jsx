@@ -30,7 +30,7 @@ function Page({ page }) {
   return (
     <main className="flex min-h-[calc(100vh-74px)] items-center px-6 py-16">
       <section className="mx-auto max-w-[760px] text-center">
-        <p className="m-0 mb-3 text-[13px] font-black uppercase text-[#f06423]">
+        <p className="m-0 mb-3 text-[13px] font-black uppercase text-[var(--color-primary)]">
           {page.eyebrow}
         </p>
         <h1 className="m-0 text-[clamp(40px,7vw,76px)] leading-[0.96] text-[#3f2016]">

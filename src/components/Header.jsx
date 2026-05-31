@@ -12,8 +12,9 @@ const navItems = [
 ]
 
 const navLinkBase =
-  'relative whitespace-nowrap text-xs font-black uppercase text-[#5a2b1b] no-underline transition-colors after:absolute after:-bottom-2 after:left-0 after:h-0.5 after:w-full after:origin-center after:scale-x-50 after:rounded-full after:bg-[#f06423] after:opacity-0 after:transition hover:text-[#f06423] hover:after:scale-x-100 hover:after:opacity-100 max-[860px]:py-3 max-[860px]:after:bottom-1.5 max-[860px]:after:w-11'
-const navLinkActive = 'text-[#f06423] after:scale-x-100 after:opacity-100'
+  'relative whitespace-nowrap text-xs font-black uppercase text-[#5a2b1b] no-underline transition-colors after:absolute after:-bottom-2 after:left-0 after:h-0.5 after:w-full after:origin-center after:scale-x-50 after:rounded-full after:bg-[var(--color-primary)] after:opacity-0 after:transition hover:text-[var(--color-primary)] hover:after:scale-x-100 hover:after:opacity-100 max-[860px]:py-3 max-[860px]:after:bottom-1.5 max-[860px]:after:w-11'
+const navLinkActive =
+  'text-[var(--color-primary)] after:scale-x-100 after:opacity-100'
 
 function Header() {
   const [serviceMode, setServiceMode] = useState('delivery')
@@ -36,7 +37,7 @@ function Header() {
         <span
           className={
             serviceMode === 'delivery'
-              ? 'text-[#f06423] opacity-100'
+              ? 'text-[var(--color-primary)] opacity-100'
               : 'opacity-70'
           }
         >
@@ -44,7 +45,7 @@ function Header() {
         </span>
         <button
           aria-label="Toggle service mode"
-          className="relative h-[22px] w-[42px] cursor-pointer rounded-full border-0 bg-[#f06423] p-[3px]"
+          className="relative h-[22px] w-[42px] cursor-pointer rounded-full border-0 bg-[var(--color-primary)] p-[3px]"
           type="button"
           onClick={() =>
             setServiceMode((mode) =>
@@ -61,7 +62,7 @@ function Header() {
         <span
           className={
             serviceMode === 'takeaway'
-              ? 'text-[#f06423] opacity-100'
+              ? 'text-[var(--color-primary)] opacity-100'
               : 'opacity-70'
           }
         >
@@ -71,7 +72,7 @@ function Header() {
 
       <button
         aria-label={menuOpen ? 'Close navigation' : 'Open navigation'}
-        className="hidden cursor-pointer items-center justify-self-end border-0 bg-transparent text-[26px] font-black uppercase text-[#f06423] max-[860px]:inline-flex"
+        className="hidden cursor-pointer items-center justify-self-end border-0 bg-transparent text-[26px] font-black uppercase text-[var(--color-primary)] max-[860px]:inline-flex"
         type="button"
         onClick={() => setMenuOpen((open) => !open)}
       >
@@ -99,7 +100,7 @@ function Header() {
       </nav>
 
       <button
-        className="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap border-0 bg-transparent text-xs font-black uppercase text-[#f06423] max-[860px]:justify-self-end"
+        className="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap border-0 bg-transparent text-xs font-black uppercase text-[var(--color-primary)] max-[860px]:justify-self-end"
         type="button"
       >
         <FiUser className="h-[22px] w-[22px]" aria-hidden="true" />
