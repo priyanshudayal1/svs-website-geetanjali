@@ -31,10 +31,10 @@ const footerGroups = [
 ]
 
 const socialLinks = [
-  { label: 'Facebook', icon: FiFacebook },
-  { label: 'Instagram', icon: FiInstagram },
-  { label: 'YouTube', icon: FaYoutube },
-  { label: 'X', icon: FiTwitter },
+  { label: 'Facebook', icon: FiFacebook, href: 'https://www.facebook.com/svsfoodveg/' },
+  { label: 'Instagram', icon: FiInstagram, href: 'https://www.instagram.com/svsf_food/' },
+  { label: 'YouTube', icon: FaYoutube, href: 'https://www.youtube.com/@svsfood' },
+  { label: 'X', icon: FiTwitter, href: 'https://x.com/svs_food' },
 ]
 
 function footerPath(label) {
@@ -59,10 +59,12 @@ function Footer() {
               100% Pure Veg.
             </p>
             <div className="mt-[22px] flex gap-3">
-              {socialLinks.map(({ icon: Icon, label }) => (
+              {socialLinks.map(({ href, icon: Icon, label }) => (
                 <a
                   className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/35 bg-white/10 text-white no-underline transition hover:border-white hover:bg-white hover:text-[var(--color-primary)]"
-                  href="/"
+                  href={href}
+                  target="_blank"
+                  rel="noreferrer"
                   aria-label={label}
                   key={label}
                 >
@@ -95,7 +97,9 @@ function Footer() {
             </h2>
             <a
               className="inline-flex min-h-12 items-center gap-2.5 rounded-[7px] border border-white/55 bg-white/10 px-[13px] py-1.5 text-white no-underline transition hover:-translate-y-px hover:border-white hover:bg-white hover:text-[var(--color-primary)]"
-              href="/"
+              href="https://play.google.com/store/apps/details?id=com.app.uengage.svsfood"
+              target="_blank"
+              rel="noreferrer"
             >
               <FaGooglePlay
                 className="h-6 w-6"
@@ -110,7 +114,9 @@ function Footer() {
             </a>
             <a
               className="inline-flex min-h-12 items-center gap-2.5 rounded-[7px] border border-white/55 bg-white/10 px-[13px] py-1.5 text-white no-underline transition hover:-translate-y-px hover:border-white hover:bg-white hover:text-[var(--color-primary)]"
-              href="/"
+              href="https://apps.apple.com/app/id1577576347"
+              target="_blank"
+              rel="noreferrer"
             >
               <FaApple
                 className="h-6 w-6"

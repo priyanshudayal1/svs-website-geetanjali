@@ -3,6 +3,7 @@ import { FiPlus, FiSearch, FiShoppingBag, FiSliders, FiStar, FiX } from 'react-i
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import comboBannerFood from '../assets/combo-banner-food.png'
 import { useMenuFeed } from '../hooks/useMenuFeed'
+import OurMenu from './OurMenu'
 
 const ratingOptions = [4.5, 4, 3]
 const spicyOptions = ['Mild', 'Medium', 'Hot']
@@ -37,7 +38,7 @@ function MenuCard({ item, count, onAdd }) {
         }
       }}
     >
-      <div className="relative grid h-[156px] place-items-center bg-[#fffaf7] px-4 pt-4">
+      <div className="relative grid h-[156px] shrink-0 place-items-center overflow-hidden bg-white px-4 pt-4">
         {item.rating ? (
           <span className="absolute top-3 right-3 inline-flex items-center gap-1 text-[11px] font-black text-[#42342e]">
             <FiStar className="fill-[#ffbd2e] text-[#ffbd2e]" aria-hidden="true" />
@@ -45,7 +46,7 @@ function MenuCard({ item, count, onAdd }) {
           </span>
         ) : null}
         <img
-          className="h-full w-full object-contain transition duration-300 group-hover:scale-[1.06]"
+          className="max-h-[132px] max-w-full object-contain transition duration-300 group-hover:scale-[1.06]"
           src={item.image}
           alt={item.name}
           loading="lazy"
@@ -101,7 +102,7 @@ function MenuPage({ addToCart, cartItems }) {
   const selectedCategory = searchParams.get('category') || 'all'
   const [query, setQuery] = useState('')
   const [vegOnly, setVegOnly] = useState(false)
-  const [maxPrice, setMaxPrice] = useState(500)
+  const [maxPrice, setMaxPrice] = useState(null)
   const [rating, setRating] = useState(0)
   const [spicy, setSpicy] = useState([])
 
@@ -110,12 +111,13 @@ function MenuPage({ addToCart, cartItems }) {
     () => Math.max(500, ...allItems.map((item) => item.price || 0)),
     [allItems],
   )
+  const activeMaxPrice = maxPrice ?? menuMaxPrice
 
   const filteredItems = useMemo(() => {
     return allItems.filter((item) => {
       const categoryMatch =
         selectedCategory === 'all' || item.categorySlug === selectedCategory
-      const priceMatch = item.price <= maxPrice
+      const priceMatch = item.price <= activeMaxPrice
       const vegMatch = !vegOnly || item.veg !== false
       const ratingMatch = !rating || item.rating >= rating
       const spicyMatch = spicy.length === 0 || spicy.includes(item.spicy)
@@ -129,7 +131,7 @@ function MenuPage({ addToCart, cartItems }) {
         titleMatches(item, query)
       )
     })
-  }, [allItems, maxPrice, query, rating, selectedCategory, spicy, vegOnly])
+  }, [activeMaxPrice, allItems, query, rating, selectedCategory, spicy, vegOnly])
 
   const cartTotal = cartItems.reduce((total, item) => total + item.quantity, 0)
 
@@ -140,7 +142,7 @@ function MenuPage({ addToCart, cartItems }) {
   function clearFilters() {
     setQuery('')
     setVegOnly(false)
-    setMaxPrice(500)
+    setMaxPrice(null)
     setRating(0)
     setSpicy([])
   }
@@ -160,8 +162,10 @@ function MenuPage({ addToCart, cartItems }) {
   }
 
   return (
-    <main className="bg-[#f1f0f4] px-6 py-10 max-[720px]:px-4 max-[720px]:py-7">
-      <section className="mx-auto max-w-[1240px]">
+    <main className="bg-[#f1f0f4]">
+      <OurMenu />
+
+      <section className="mx-auto max-w-[1240px] px-6 py-10 max-[720px]:px-4 max-[720px]:py-7">
         <div className="mb-7 flex items-start justify-between gap-5 max-[820px]:flex-col">
           <div>
             <p className="m-0 mb-2 text-[13px] font-black uppercase text-[var(--color-primary)]">
@@ -245,7 +249,7 @@ function MenuPage({ addToCart, cartItems }) {
               <div className="grid gap-3 border-t border-[#f0e8e2] pt-5">
                 <div className="flex items-center justify-between text-xs font-black text-[#20242b]">
                   <span>Price Range</span>
-                  <span>₹{maxPrice}</span>
+                  <span>₹{activeMaxPrice}</span>
                 </div>
                 <input
                   className="w-full accent-[var(--color-primary)]"
@@ -253,12 +257,12 @@ function MenuPage({ addToCart, cartItems }) {
                   min="20"
                   max={menuMaxPrice}
                   step="10"
-                  value={maxPrice}
+                  value={activeMaxPrice}
                   onChange={(event) => setMaxPrice(Number(event.target.value))}
                 />
                 <div className="flex justify-between text-[11px] font-bold text-[#7d828a]">
                   <span>₹20</span>
-                  <span>₹220+</span>
+                  <span>₹{menuMaxPrice}+</span>
                 </div>
               </div>
 

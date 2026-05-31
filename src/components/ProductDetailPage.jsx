@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   FiCheckCircle,
   FiChevronRight,
@@ -10,9 +10,10 @@ import {
   FiThumbsUp,
 } from 'react-icons/fi'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { fetchItemDetails, normalizeItemDetails } from '../data/menuFeed'
 import { useMenuFeed } from '../hooks/useMenuFeed'
 
-const addOns = [
+const fallbackAddOns = [
   { name: 'Extra Cheese', price: 20 },
   { name: 'Jalapenos', price: 15 },
   { name: 'Extra Sauce', price: 15 },
@@ -43,9 +44,9 @@ function SuggestedCard({ item }) {
       className="group min-h-[238px] rounded-lg border border-[#ebe6e2] bg-white p-3 text-[#171b21] no-underline shadow-[0_10px_22px_rgb(40_28_22_/_7%)] transition hover:-translate-y-1 hover:shadow-[0_18px_30px_rgb(40_28_22_/_11%)]"
       to={`/order/${item.slug}`}
     >
-      <div className="relative grid h-[138px] place-items-center">
+      <div className="relative grid h-[138px] place-items-center overflow-hidden">
         <img
-          className="h-full w-full object-contain transition duration-300 group-hover:scale-[1.06]"
+          className="max-h-[124px] max-w-full object-contain transition duration-300 group-hover:scale-[1.06]"
           src={item.image}
           alt={item.name}
           loading="lazy"
@@ -68,38 +69,104 @@ function ProductDetailPage({ addToCart }) {
   const navigate = useNavigate()
   const { allItems, isLoading } = useMenuFeed()
   const item = allItems.find((menuItem) => menuItem.slug === itemSlug)
+  const [detail, setDetail] = useState(null)
+  const [detailStatus, setDetailStatus] = useState('idle')
   const [selectedAddOns, setSelectedAddOns] = useState([])
   const [selectedSize, setSelectedSize] = useState('Regular')
   const [quantity, setQuantity] = useState(1)
+  const liveItem = detail?.item || item
+
+  useEffect(() => {
+    setDetail(null)
+    setDetailStatus('idle')
+    setSelectedAddOns([])
+    setSelectedSize('Regular')
+    setQuantity(1)
+
+    if (!item?.sectionId || !item?.id) {
+      return undefined
+    }
+
+    let active = true
+    setDetailStatus('loading')
+
+    fetchItemDetails({ sectionId: item.sectionId, itemId: item.id })
+      .then((response) => {
+        if (!active) {
+          return
+        }
+
+        setDetail(normalizeItemDetails(response, item))
+        setDetailStatus('ready')
+      })
+      .catch(() => {
+        if (!active) {
+          return
+        }
+
+        setDetailStatus('error')
+      })
+
+    return () => {
+      active = false
+    }
+  }, [item])
 
   const sizes = useMemo(() => {
-    if (!item) {
+    if (!liveItem) {
       return []
     }
 
-    return [
-      { name: 'Regular', price: item.price },
-      { name: 'Medium', price: item.price + 30 },
-      { name: 'Large', price: item.price + 50 },
-    ]
-  }, [item])
+    const variants = liveItem.rawDetail?.variants || []
+    const liveSizes = variants
+      .filter((variant) => variant.status !== '0')
+      .map((variant) => ({
+        name: variant.itemName || variant.variantName || 'Regular',
+        price: Number(variant.sp || variant.mrp || liveItem.price),
+      }))
+
+    return liveSizes.length ? liveSizes : [{ name: 'Regular', price: liveItem.price }]
+  }, [liveItem])
+
+  const addOnGroups = useMemo(() => {
+    const liveGroups = detail?.addOnGroups?.filter((group) => group.items.length) || []
+
+    if (liveGroups.length) {
+      return liveGroups
+    }
+
+    if (detailStatus === 'loading' && item?.sectionId && item?.id) {
+      return []
+    }
+
+    return [{ templateId: 'fallback', items: fallbackAddOns }]
+  }, [detail, detailStatus, item])
+
+  const addOns = useMemo(
+    () => addOnGroups.flatMap((group) => group.items),
+    [addOnGroups],
+  )
 
   const suggestedItems = useMemo(() => {
-    if (!item) {
+    if (!liveItem) {
       return []
+    }
+
+    if (detail?.similarItems?.length) {
+      return detail.similarItems.slice(0, 4)
     }
 
     const sameCategory = allItems.filter(
-      (menuItem) => menuItem.categorySlug === item.categorySlug && menuItem.slug !== item.slug,
+      (menuItem) => menuItem.categorySlug === liveItem.categorySlug && menuItem.slug !== liveItem.slug,
     )
     const extras = allItems.filter(
-      (menuItem) => menuItem.categorySlug !== item.categorySlug && menuItem.slug !== item.slug,
+      (menuItem) => menuItem.categorySlug !== liveItem.categorySlug && menuItem.slug !== liveItem.slug,
     )
 
     return [...sameCategory, ...extras].slice(0, 4)
-  }, [allItems, item])
+  }, [allItems, detail, liveItem])
 
-  if (!item) {
+  if (!liveItem) {
     return (
       <main className="grid min-h-[calc(100vh-74px)] place-items-center bg-[#f8f5f2] px-6 py-16 text-center">
         <section className="max-w-[520px]">
@@ -120,7 +187,7 @@ function ProductDetailPage({ addToCart }) {
     )
   }
 
-  const selectedSizePrice = sizes.find((size) => size.name === selectedSize)?.price || item.price
+  const selectedSizePrice = sizes.find((size) => size.name === selectedSize)?.price || liveItem.price
   const addOnTotal = addOns
     .filter((addOn) => selectedAddOns.includes(addOn.name))
     .reduce((total, addOn) => total + addOn.price, 0)
@@ -135,7 +202,7 @@ function ProductDetailPage({ addToCart }) {
   }
 
   function handleAddToCart() {
-    addToCart(item, {
+    addToCart(liveItem, {
       addOns: selectedAddOns,
       price: selectedSizePrice + addOnTotal,
       quantity,
@@ -154,22 +221,22 @@ function ProductDetailPage({ addToCart }) {
           <FiChevronRight aria-hidden="true" />
           <Link
             className="text-[#8a8f96] no-underline hover:text-[var(--color-primary)]"
-            to={`/order?category=${item.categorySlug}`}
+            to={`/order?category=${liveItem.categorySlug}`}
           >
-            {item.category}
+            {liveItem.category}
           </Link>
           <FiChevronRight aria-hidden="true" />
-          <span className="text-[#222831]">{item.name}</span>
+          <span className="text-[#222831]">{liveItem.name}</span>
         </nav>
 
         <div className="grid grid-cols-[1.1fr_0.9fr] gap-10 max-[900px]:grid-cols-1">
           <section>
             <div className="grid min-h-[480px] overflow-hidden rounded-xl border border-[#ebe5df] bg-white shadow-[0_16px_34px_rgb(40_28_22_/_8%)]">
-              <div className="grid min-h-[365px] place-items-center bg-[#fff7f1] p-6">
+              <div className="grid min-h-[365px] place-items-center bg-white p-6">
                 <img
                   className="max-h-[340px] w-full object-contain drop-shadow-[0_28px_34px_rgb(89_48_25_/_24%)]"
-                  src={item.image}
-                  alt={item.name}
+                  src={liveItem.image}
+                  alt={liveItem.name}
                 />
               </div>
 
@@ -187,45 +254,72 @@ function ProductDetailPage({ addToCart }) {
           <section className="pt-1">
             <div className="flex items-center gap-3">
               <h1 className="m-0 text-[clamp(28px,4vw,42px)] leading-tight font-black text-[#171b21]">
-                {item.name}
+                {liveItem.name}
               </h1>
               <VegMark />
             </div>
 
             <div className="mt-2 flex items-center gap-1 text-[12px] font-black text-[#444b55]">
               <FiStar className="fill-[#ffbd2e] text-[#ffbd2e]" aria-hidden="true" />
-              {(item.rating || 4.6).toFixed(1)}
-              <span className="font-semibold text-[#747a83]">(120 reviews)</span>
+              {(liveItem.rating || 4.6).toFixed(1)}
+              {liveItem.rawDetail?.ratingCount ? (
+                <span className="font-semibold text-[#747a83]">
+                  ({liveItem.rawDetail.ratingCount} reviews)
+                </span>
+              ) : null}
             </div>
 
             <strong className="mt-4 block text-[26px] leading-none text-[#111318]">
-              ₹{item.price}
+              ₹{liveItem.price}
             </strong>
+            {detailStatus === 'loading' ? (
+              <p className="mt-3 mb-0 text-xs font-bold text-[#8a8f96]">
+                Loading latest item details...
+              </p>
+            ) : null}
+            {detailStatus === 'error' ? (
+              <p className="mt-3 mb-0 text-xs font-bold text-[#8d3b20]">
+                Latest details could not be loaded, showing saved menu data.
+              </p>
+            ) : null}
             <p className="mt-5 mb-6 max-w-[480px] text-sm leading-[1.7] font-medium text-[#545a63]">
-              {item.description}
+              {liveItem.description || liveItem.category}
             </p>
 
             <div className="rounded-xl border border-[#ebe5df] bg-white p-5 shadow-[0_14px_30px_rgb(40_28_22_/_7%)]">
               <h2 className="m-0 mb-4 text-sm font-black text-[#171b21]">Choose Add-ons</h2>
-              <div className="grid gap-3">
-                {addOns.map((addOn) => (
-                  <label
-                    className="flex cursor-pointer items-center justify-between gap-4 text-sm font-semibold text-[#4d535c]"
-                    key={addOn.name}
-                  >
-                    <span className="inline-flex items-center gap-3">
-                      <input
-                        className="h-4 w-4 accent-[var(--color-primary)]"
-                        type="checkbox"
-                        checked={selectedAddOns.includes(addOn.name)}
-                        onChange={() => toggleAddOn(addOn.name)}
-                      />
-                      {addOn.name}
-                    </span>
-                    <span className="font-black text-[#2c3138]">+₹{addOn.price}</span>
-                  </label>
-                ))}
-              </div>
+              {addOnGroups.length ? (
+                addOnGroups.map((group) => (
+                  <div className="grid gap-3" key={group.templateId || 'addons'}>
+                    {group.items.map((addOn) => (
+                      <label
+                        className={`flex items-center justify-between gap-4 text-sm font-semibold ${
+                          addOn.outOfStock
+                            ? 'cursor-not-allowed text-[#9a9fa7]'
+                            : 'cursor-pointer text-[#4d535c]'
+                        }`}
+                        key={`${group.templateId}-${addOn.name}`}
+                      >
+                        <span className="inline-flex items-center gap-3">
+                          <input
+                            className="h-4 w-4 accent-[var(--color-primary)]"
+                            type="checkbox"
+                            checked={selectedAddOns.includes(addOn.name)}
+                            disabled={addOn.outOfStock}
+                            onChange={() => toggleAddOn(addOn.name)}
+                          />
+                          {addOn.name}
+                        </span>
+                        <span className="font-black text-[#2c3138]">+₹{addOn.price}</span>
+                      </label>
+                    ))}
+                  </div>
+                ))
+              ) : (
+                <p className="m-0 text-sm font-semibold text-[#747a83]">
+                  Loading add-ons...
+                </p>
+              )}
 
               <h2 className="m-0 mt-6 mb-4 border-t border-[#f0e9e3] pt-5 text-sm font-black text-[#171b21]">
                 Choose Size

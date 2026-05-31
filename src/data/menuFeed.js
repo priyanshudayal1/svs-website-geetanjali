@@ -4,6 +4,7 @@ export const BUSINESS_ID = '6808'
 export const BUSINESS_SLUG = 'svs-food-narmada-road-jabalpur'
 export const SET_COOKIES_ENDPOINT = 'https://svsfood.com/client/setCookies'
 export const FEED_ENDPOINT = `https://menu-feed.uengage.in/feed/v2/feed_${BUSINESS_ID}.json`
+export const ITEM_DETAILS_ENDPOINT = 'https://svsfood.com/petPooja/getItemDetails'
 
 const spiceByName = [
   { words: ['chilli', 'spicy', 'peri peri', 'chatpata', 'mexican'], value: 'Hot' },
@@ -48,6 +49,7 @@ function normalizeMenuItem(item, category) {
 
   return {
     id: item.id || item.feed_Id || `${category.slug}-${itemSlug}`,
+    sectionId: item.sectionId || category.sectionId || category.id,
     name,
     description: item.description || category.name,
     price: toNumber(item.sp || item.mrp),
@@ -66,6 +68,8 @@ function normalizeMenuItem(item, category) {
 function normalizeSection(section) {
   const name = titleCase(section.sectionName || 'Menu')
   const category = {
+    id: section.id,
+    sectionId: section.id,
     name,
     slug: slugify(section.sectionName || name),
     image: section.image ? menuImage(section.image) : menuImage('image-7681-1777654872.jpeg'),
@@ -133,4 +137,79 @@ export async function fetchMenuFeed() {
   }
 
   return response.json()
+}
+
+function normalizeDetailTemplate(templateGroup) {
+  const items = templateGroup.template || templateGroup.items || []
+
+  return {
+    templateId: String(templateGroup.templateId || ''),
+    items: items
+      .filter((item) => item.status !== '0')
+      .map((item) => ({
+        id: item.id || item.itemId || item.itemName,
+        name: item.itemName || 'Add-on',
+        description: item.description || item.itemName || '',
+        price: toNumber(item.sp || item.mrp),
+        outOfStock: item.out_of_stock === '1',
+        veg: item.vegNonvegBoth !== 'non-veg',
+        raw: item,
+      })),
+  }
+}
+
+export function normalizeItemDetails(details, fallbackItem) {
+  const item = details?.rows?.menu?.[0]
+
+  if (!item) {
+    return null
+  }
+
+  const category = {
+    name: titleCase(item.sectionName || fallbackItem.category || 'Menu'),
+    slug: slugify(item.sectionName || fallbackItem.category || 'menu'),
+    sectionId: item.sectionId || fallbackItem.sectionId,
+    image: fallbackItem.categoryImage || fallbackItem.image,
+  }
+
+  const detailItem = {
+    ...fallbackItem,
+    ...normalizeMenuItem(item, category),
+    rawDetail: item,
+  }
+
+  return {
+    item: detailItem,
+    addOnGroups: (details.rows.templates || []).map(normalizeDetailTemplate),
+    similarItems: (details.similar_items || []).map((similarItem) =>
+      normalizeMenuItem(similarItem, {
+        name: titleCase(similarItem.sectionName || category.name),
+        slug: slugify(similarItem.sectionName || category.name),
+        sectionId: similarItem.sectionId,
+        image: detailItem.image,
+      }),
+    ),
+    sharingUrl: details.sharing_url,
+  }
+}
+
+export async function fetchItemDetails({ sectionId, itemId, menuType = 'delivery' }) {
+  const url = new URL(ITEM_DETAILS_ENDPOINT)
+  url.searchParams.set('sectionId', sectionId)
+  url.searchParams.set('itemId', itemId)
+  url.searchParams.set('businessId', BUSINESS_ID)
+  url.searchParams.set('menuType', menuType)
+
+  const response = await fetch(url.toString(), {
+    headers: {
+      Accept: 'application/json, text/javascript, */*; q=0.01',
+      'X-Requested-With': 'XMLHttpRequest',
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Item details request failed with ${response.status}`)
+  }
+
+  return JSON.parse(await response.text())
 }

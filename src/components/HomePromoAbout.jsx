@@ -1,4 +1,8 @@
+import { useEffect, useMemo, useState } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+
 const offers = [
+  { code: 'CREAMY' },
   { code: 'SAVOURY' },
   { code: 'SNACKY' },
   { code: 'CHEEZY' },
@@ -22,7 +26,11 @@ function SectionHeading({ children }) {
 
 function OfferCard({ code }) {
   return (
-    <article className="relative min-h-[104px] overflow-hidden rounded-xl bg-white px-5 py-4 shadow-[0_4px_16px_rgb(24_24_27_/_14%)]">
+    <motion.article
+      className="relative min-h-[104px] overflow-hidden rounded-xl bg-white px-5 py-4 shadow-[0_4px_16px_rgb(24_24_27_/_14%)]"
+      whileHover={{ y: -3 }}
+      transition={{ duration: 0.22, ease: 'easeOut' }}
+    >
       <div className="relative z-[1]">
         <h3 className="m-0 text-[26px] leading-none font-black tracking-wide text-[#f16a34] uppercase">
           Freebie
@@ -37,7 +45,71 @@ function OfferCard({ code }) {
       <div className="absolute right-9 bottom-3 grid h-[58px] w-[58px] rotate-12 place-items-center rounded-[18px] bg-[#ff7346] text-[14px] font-black text-white uppercase shadow-[0_4px_8px_rgb(222_85_43_/_24%)]">
         Free
       </div>
-    </article>
+    </motion.article>
+  )
+}
+
+function OffersCarousel() {
+  const [activeIndex, setActiveIndex] = useState(0)
+  const prefersReducedMotion = useReducedMotion()
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      return undefined
+    }
+
+    const timer = window.setInterval(() => {
+      setActiveIndex((index) => (index + 1) % offers.length)
+    }, 2600)
+
+    return () => window.clearInterval(timer)
+  }, [prefersReducedMotion])
+
+  const visibleOffers = useMemo(
+    () => Array.from({ length: 3 }, (_, offset) => offers[(activeIndex + offset) % offers.length]),
+    [activeIndex],
+  )
+
+  return (
+    <div>
+      <div className="overflow-hidden px-1 py-2">
+        <AnimatePresence mode="wait">
+          <motion.div
+            className="grid grid-cols-3 gap-9 max-[900px]:grid-cols-2 max-[620px]:grid-cols-1"
+            key={activeIndex}
+            initial={{ x: 56 }}
+            animate={{ x: 0 }}
+            exit={{ x: -56 }}
+            transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {visibleOffers.map((offer) => (
+              <OfferCard code={offer.code} key={`${activeIndex}-${offer.code}`} />
+            ))}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      <div className="mt-4 flex items-center justify-center gap-2" aria-label="Offer carousel">
+        {offers.map((offer, index) => {
+          const active = activeIndex === index
+
+          return (
+            <button
+              className={`h-2.5 cursor-pointer rounded-full border p-0 transition-all ${
+                active
+                  ? 'w-7 border-[#f16a34] bg-white'
+                  : 'w-2.5 border-transparent bg-[#c9c9c9]'
+              }`}
+              type="button"
+              aria-label={`Show offer ${offer.code}`}
+              aria-current={active}
+              key={offer.code}
+              onClick={() => setActiveIndex(index)}
+            />
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
@@ -48,18 +120,7 @@ function HomePromoAbout() {
         <div className="mx-auto max-w-[980px]">
           <SectionHeading>Exclusive Offers For You</SectionHeading>
 
-          <div className="grid grid-cols-3 gap-9 max-[900px]:grid-cols-2 max-[620px]:grid-cols-1">
-            {offers.map((offer) => (
-              <OfferCard code={offer.code} key={offer.code} />
-            ))}
-          </div>
-
-          <div className="mt-5 flex items-center justify-center gap-2" aria-hidden="true">
-            <span className="h-2.5 w-2.5 rounded-full bg-[#c9c9c9]" />
-            <span className="h-2.5 w-7 rounded-full border border-[#f16a34] bg-white" />
-            <span className="h-2.5 w-2.5 rounded-full bg-[#c9c9c9]" />
-            <span className="h-2.5 w-2.5 rounded-full bg-[#c9c9c9]" />
-          </div>
+          <OffersCarousel />
         </div>
       </section>
 
