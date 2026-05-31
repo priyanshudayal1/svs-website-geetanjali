@@ -6,27 +6,61 @@ import {
   FiNavigation,
   FiSearch,
 } from 'react-icons/fi'
-import { useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import heroImage from '../assets/food-hero.png'
 import vegBeverageDessert from '../assets/hero-carousel/veg-beverage-dessert.png'
 import vegFriesBurger from '../assets/hero-carousel/veg-fries-burger.png'
 import vegNaanRoll from '../assets/hero-carousel/veg-naan-roll.png'
 import vegPartyCombo from '../assets/hero-carousel/veg-party-combo.png'
 import logo from '../assets/logo.png'
+import HomePromoAbout from './HomePromoAbout'
 import OurMenu from './OurMenu'
 
-const stores = [
+const fallbackStores = [
   {
-    address: 'Narmada Road, Jabalpur',
+    locality: 'Narmada Road',
+    city: 'Jabalpur',
+    name: 'SVS Food',
+    distance: '0.82',
+    address: 'Ojas Imperia, Kalyanika Parisar, Bandaria Tiraha, Rampur, Jabalpur (M.P.) 482008',
+    id: '6808',
+    onlineOrdersStartHours: '11',
+    onlineOrdersStartMins: '0',
+    onlineOrdersEndHours: '23',
+    onlineOrdersEndMins: '0',
   },
   {
-    address: 'Civic Centre, Jabalpur',
+    locality: 'Civic Centre',
+    city: 'Jabalpur',
+    name: 'SVS Food',
+    distance: '2.19',
+    address: 'Shop No. S-22,22A Samdareeya Mall, Civic Centre, Jabalpur,',
+    id: '12498',
+    onlineOrdersStartHours: '11',
+    onlineOrdersStartMins: '0',
+    onlineOrdersEndHours: '23',
+    onlineOrdersEndMins: '0',
   },
   {
-    address: 'Rewa Road, Satna',
-    distance: '183 KMs away',
+    locality: 'Satna',
+    city: 'Satna',
+    name: 'SVS Food',
+    address: 'SVS Food, Satna',
+    id: 'satna-fallback',
+    onlineOrdersStartHours: '11',
+    onlineOrdersStartMins: '0',
+    onlineOrdersEndHours: '23',
+    onlineOrdersEndMins: '0',
   },
 ]
+
+const storesEndpoint = 'https://svsfood.com/client/getStoresName'
+const localityEndpoint = 'https://svsfood.com/maps_mongodb/getLocalityByName'
+const geocodeEndpoint = 'https://svsfood.com/maps_mongodb/getGeocodeAddress'
+const nearestStoreEndpoint = 'https://svsfood.com/client/locateNearestStore'
+const businessId = '6442'
+const geocodeHashKey =
+  '7d110d504384caed9fd0bee8f00f6107802786f2e14c7ee71e3763dc793d89f6'
 
 const controlButton =
   'inline-flex min-h-8 items-center gap-2 rounded-md border border-[#e9e2df] bg-white px-3 text-xs font-extrabold text-[#363a40] shadow-sm'
@@ -55,17 +89,72 @@ const heroSlides = [
   },
 ]
 
+function formatStoreHours(store) {
+  const startHour = store.onlineOrdersStartHours ?? '11'
+  const startMins = String(store.onlineOrdersStartMins ?? '0').padStart(2, '0')
+  const endHour = store.onlineOrdersEndHours ?? '23'
+  const endMins = String(store.onlineOrdersEndMins ?? '0').padStart(2, '0')
+
+  return `${startHour}:${startMins} to ${endHour}:${endMins}`
+}
+
+function formatDistance(distance) {
+  return distance ? `${Number(distance).toFixed(2)} KMs away` : ''
+}
+
+async function fetchJson(url, options = {}) {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      Accept: 'application/json, text/javascript, */*; q=0.01',
+      'X-Requested-With': 'XMLHttpRequest',
+      ...options.headers,
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Request failed with ${response.status}`)
+  }
+
+  return response.json()
+}
+
+async function getStoresForCoordinates({ lat, lng, signal }) {
+  const params = new URLSearchParams({
+    lat,
+    lng,
+    hashKey: geocodeHashKey,
+    businessId,
+  })
+  const storeParams = new URLSearchParams({ businessId, lat, lng })
+
+  const [locationResult, storeResult] = await Promise.all([
+    fetchJson(`${geocodeEndpoint}?${params}`, { signal }),
+    fetchJson(`${nearestStoreEndpoint}?${storeParams}`, { signal }),
+  ])
+
+  return {
+    location: locationResult,
+    stores:
+      storeResult?.status === 1 && Array.isArray(storeResult.data)
+        ? storeResult.data
+        : [],
+  }
+}
+
 function StoreCard({ store }) {
+  const distance = formatDistance(store.distance)
+
   return (
     <article
       className={`relative flex min-h-[86px] items-center justify-between gap-4 rounded-lg bg-white px-4 py-3 shadow-sm max-[720px]:flex-col max-[720px]:items-stretch ${
-        store.distance ? 'pt-10' : ''
+        distance ? 'pt-10' : ''
       }`}
     >
-      {store.distance ? (
+      {distance ? (
         <div className="absolute -top-px -left-px inline-flex items-center gap-1.5 rounded-br-2xl border border-dashed border-[#94ba55] bg-[#e9f7cc] px-3 py-1.5 text-xs text-[#0d1a12]">
           <FiNavigation aria-hidden="true" />
-          <span>{store.distance}</span>
+          <span>{distance}</span>
         </div>
       ) : null}
 
@@ -79,18 +168,18 @@ function StoreCard({ store }) {
         </div>
         <div className="min-w-0">
           <h3 className="m-0 text-lg font-black leading-tight text-[#20242b]">
-            SVS Food
+            {store.name || 'SVS Food'}
           </h3>
           <div className="mt-1 grid gap-0.5">
             <p className="m-0 flex items-center gap-1.5 text-[11px] font-semibold text-[#4b4f57]">
               <FiMapPin className="shrink-0" aria-hidden="true" />
-              <span className="truncate">{store.address}</span>
+              <span className="truncate">{store.address || `${store.locality}, ${store.city}`}</span>
             </p>
             <p className="m-0 flex items-center gap-1.5 text-[11px] font-semibold text-[#4b4f57]">
               <FiClock className="shrink-0" aria-hidden="true" />
               <span>
-                <strong className="text-[#30343a]">Open from</strong> 11:00 AM
-                to 11:00 PM
+                <strong className="text-[#30343a]">Open from</strong>{' '}
+                {formatStoreHours(store)}
               </span>
             </p>
           </div>
@@ -109,6 +198,156 @@ function StoreCard({ store }) {
 
 function Hero() {
   const [activeSlide, setActiveSlide] = useState(0)
+  const [stores, setStores] = useState(fallbackStores)
+  const [cities, setCities] = useState(['Jabalpur', 'Satna'])
+  const [selectedCity, setSelectedCity] = useState('')
+  const [selectedLocation, setSelectedLocation] = useState('')
+  const [storesStatus, setStoresStatus] = useState('loading')
+  const [locationStatus, setLocationStatus] = useState('idle')
+  const [locationError, setLocationError] = useState('')
+
+  const loadStoresForCoordinates = useCallback(async ({ lat, lng, signal }) => {
+    const { location, stores: nextStores } = await getStoresForCoordinates({
+      lat,
+      lng,
+      signal,
+    })
+
+    if (location?.status === 1) {
+      setSelectedLocation(
+        location.locality ||
+          location.formatted_Address ||
+          location.city ||
+          '',
+      )
+    }
+
+    setStores(nextStores)
+  }, [])
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    async function loadStores() {
+      try {
+        const response = await fetch(storesEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          signal: controller.signal,
+        })
+
+        if (!response.ok) {
+          throw new Error(`Store request failed with ${response.status}`)
+        }
+
+        const data = await response.json()
+        const nextCities = Array.from(
+          new Set(
+            (data.stores || [])
+              .map((store) => store.city?.trim())
+              .filter((city) => city && city !== '???'),
+          ),
+        ).sort()
+
+        if (nextCities.length > 0) {
+          setCities(nextCities)
+        }
+
+        setStoresStatus('ready')
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          setStoresStatus('error')
+        }
+      }
+    }
+
+    loadStores()
+
+    return () => controller.abort()
+  }, [])
+
+  useEffect(() => {
+    if (!selectedCity) {
+      return undefined
+    }
+
+    const controller = new AbortController()
+
+    async function loadSelectedCity() {
+      setLocationStatus('loading')
+      setLocationError('')
+
+      try {
+        const localityParams = new URLSearchParams({ localityName: selectedCity })
+        const localityResult = await fetchJson(`${localityEndpoint}?${localityParams}`, {
+          signal: controller.signal,
+        })
+        const localities =
+          localityResult.search_results || localityResult.data || localityResult.locality || []
+        const matchedLocality =
+          localities.find((locality) => locality.cityName === selectedCity) || localities[0]
+
+        if (!matchedLocality?.latitude || !matchedLocality?.longitude) {
+          throw new Error('Selected city could not be located')
+        }
+
+        await loadStoresForCoordinates({
+          lat: matchedLocality.latitude,
+          lng: matchedLocality.longitude,
+          signal: controller.signal,
+        })
+        setLocationStatus('ready')
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          setStores([])
+          setSelectedLocation(selectedCity)
+          setLocationStatus('error')
+          setLocationError('No outlet details found for this location')
+        }
+      }
+    }
+
+    loadSelectedCity()
+
+    return () => controller.abort()
+  }, [loadStoresForCoordinates, selectedCity])
+
+  function useCurrentLocation() {
+    if (!navigator.geolocation) {
+      setLocationStatus('error')
+      setLocationError('Current location is not supported in this browser')
+      return
+    }
+
+    setLocationStatus('loading')
+    setLocationError('')
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          await loadStoresForCoordinates({
+            lat: String(position.coords.latitude),
+            lng: String(position.coords.longitude),
+          })
+          setSelectedCity('')
+          setLocationStatus('ready')
+        } catch {
+          setLocationStatus('error')
+          setLocationError('Could not find stores near your current location')
+        }
+      },
+      () => {
+        setLocationStatus('error')
+        setLocationError('Location permission was not allowed')
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 },
+    )
+  }
+
+  const visibleStores = useMemo(() => stores.slice(0, 12), [stores])
 
   return (
     <main className="min-h-[calc(100vh-74px)] bg-[#f1f0f4] pb-12">
@@ -182,6 +421,7 @@ function Hero() {
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   className={`${controlButton} border-[var(--color-primary-border)] text-[var(--color-primary)]`}
+                  onClick={useCurrentLocation}
                   type="button"
                 >
                   <FiNavigation aria-hidden="true" />
@@ -190,20 +430,42 @@ function Hero() {
                 <span className="text-xs font-black uppercase text-[#544740]">
                   or
                 </span>
-                <button className={selectButton} type="button">
-                  Select City
-                  <FiChevronDown aria-hidden="true" />
-                </button>
-                <button className={selectButton} type="button">
+                <label className={`${selectButton} relative cursor-pointer`}>
+                  <span className="sr-only">Select City</span>
+                  <select
+                    className="w-full cursor-pointer appearance-none border-0 bg-transparent pr-7 text-xs font-extrabold text-[#363a40] outline-none"
+                    onChange={(event) => setSelectedCity(event.target.value)}
+                    value={selectedCity}
+                  >
+                    <option value="">Select City</option>
+                    {cities.map((city) => (
+                      <option key={city} value={city}>
+                        {city}
+                      </option>
+                    ))}
+                  </select>
+                  <FiChevronDown
+                    className="pointer-events-none absolute right-3"
+                    aria-hidden="true"
+                  />
+                </label>
+                <button className={selectButton} disabled type="button">
                   Select Locality
                   <FiChevronDown aria-hidden="true" />
                 </button>
               </div>
               <p className="mt-3 mb-0 flex flex-wrap items-center gap-2 text-xs font-extrabold text-[#3b3e45]">
                 <FiMapPin className="text-[var(--color-primary)]" aria-hidden="true" />
-                Satna, Madhya Pradesh
+                {selectedLocation || selectedCity || 'Select a city to find nearby outlets'}
                 <button
                   className="cursor-pointer border-0 bg-transparent p-0 pl-1.5 font-black text-[var(--color-primary)]"
+                  onClick={() => {
+                    setSelectedCity('')
+                    setSelectedLocation('')
+                    setStores(fallbackStores)
+                    setLocationStatus('idle')
+                    setLocationError('')
+                  }}
                   type="button"
                 >
                   Change Location
@@ -256,17 +518,27 @@ function Hero() {
 
           <p className="mt-3 mb-3 flex items-center gap-2 text-sm text-[#52565d]">
             <FiSearch aria-hidden="true" />
-            <strong>{stores.length} Results</strong> found
+            <strong>{stores.length} Results</strong>{' '}
+            found
+            {stores.length > visibleStores.length ? (
+              <span>showing first {visibleStores.length}</span>
+            ) : null}
+            {storesStatus === 'loading' ? <span>loading live store data...</span> : null}
+            {locationStatus === 'loading' ? <span>finding nearest stores...</span> : null}
+            {storesStatus === 'error' || locationStatus === 'error' ? (
+              <span>{locationError || 'showing saved store data'}</span>
+            ) : null}
           </p>
 
           <div className="grid grid-cols-3 gap-6 max-[1100px]:grid-cols-2 max-[820px]:grid-cols-1">
-            {stores.map((store) => (
-              <StoreCard key={store.address} store={store} />
+            {visibleStores.map((store) => (
+              <StoreCard key={store.id || store.slug || store.address || store.city} store={store} />
             ))}
           </div>
         </div>
       </section>
       <OurMenu />
+      <HomePromoAbout />
     </main>
   )
 }

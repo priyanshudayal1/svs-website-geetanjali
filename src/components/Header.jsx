@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FiMenu, FiUser, FiX } from 'react-icons/fi'
+import { FiMenu, FiShoppingBag, FiUser, FiX } from 'react-icons/fi'
 import { NavLink } from 'react-router-dom'
 import logo from '../assets/logo.png'
 
@@ -17,7 +17,7 @@ const navLinkBase =
 const navLinkActive =
   'text-[var(--color-primary)] after:scale-x-100 after:opacity-100'
 
-function Header() {
+function Header({ cartCount }) {
   const [serviceMode, setServiceMode] = useState('delivery')
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -100,13 +100,29 @@ function Header() {
         ))}
       </nav>
 
-      <button
-        className="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap border-0 bg-transparent text-xs font-black uppercase text-[var(--color-primary)] max-[860px]:justify-self-end"
-        type="button"
-      >
-        <FiUser className="h-[22px] w-[22px]" aria-hidden="true" />
-        <span className="max-[520px]:hidden">Login</span>
-      </button>
+      <div className="flex items-center justify-end gap-4">
+        <NavLink
+          className="relative inline-flex items-center text-[var(--color-primary)] no-underline"
+          to="/cart"
+          aria-label={`Cart with ${cartCount} items`}
+          onClick={() => setMenuOpen(false)}
+        >
+          <FiShoppingBag className="h-[22px] w-[22px]" aria-hidden="true" />
+          {cartCount ? (
+            <span className="absolute -top-2 -right-2 grid h-5 min-w-5 place-items-center rounded-full bg-[#ff3f16] px-1 text-[10px] font-black text-white">
+              {cartCount}
+            </span>
+          ) : null}
+        </NavLink>
+
+        <button
+          className="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap border-0 bg-transparent text-xs font-black uppercase text-[var(--color-primary)] max-[860px]:justify-self-end"
+          type="button"
+        >
+          <FiUser className="h-[22px] w-[22px]" aria-hidden="true" />
+          <span className="max-[520px]:hidden">Login</span>
+        </button>
+      </div>
     </header>
   )
 }

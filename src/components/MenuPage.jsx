@@ -2,9 +2,8 @@ import { useMemo, useState } from 'react'
 import { FiPlus, FiSearch, FiShoppingBag, FiSliders, FiStar, FiX } from 'react-icons/fi'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import comboBannerFood from '../assets/combo-banner-food.png'
-import { allMenuItems, menuCategories } from '../data/menuData'
+import { useMenuFeed } from '../hooks/useMenuFeed'
 
-const categoryTabs = [{ name: 'All', slug: 'all' }, ...menuCategories]
 const ratingOptions = [4.5, 4, 3]
 const spicyOptions = ['Mild', 'Medium', 'Hot']
 
@@ -96,35 +95,43 @@ function FilterCheckbox({ label, checked, onChange }) {
   )
 }
 
-function MenuPage() {
+function MenuPage({ addToCart, cartItems }) {
   const [searchParams, setSearchParams] = useSearchParams()
+  const { allItems, categories, error, isLoading } = useMenuFeed()
   const selectedCategory = searchParams.get('category') || 'all'
   const [query, setQuery] = useState('')
   const [vegOnly, setVegOnly] = useState(false)
-  const [maxPrice, setMaxPrice] = useState(220)
+  const [maxPrice, setMaxPrice] = useState(500)
   const [rating, setRating] = useState(0)
   const [spicy, setSpicy] = useState([])
-  const [cart, setCart] = useState({})
+
+  const categoryTabs = useMemo(() => [{ name: 'All', slug: 'all' }, ...categories], [categories])
+  const menuMaxPrice = useMemo(
+    () => Math.max(500, ...allItems.map((item) => item.price || 0)),
+    [allItems],
+  )
 
   const filteredItems = useMemo(() => {
-    return allMenuItems.filter((item) => {
+    return allItems.filter((item) => {
       const categoryMatch =
         selectedCategory === 'all' || item.categorySlug === selectedCategory
       const priceMatch = item.price <= maxPrice
+      const vegMatch = !vegOnly || item.veg !== false
       const ratingMatch = !rating || item.rating >= rating
       const spicyMatch = spicy.length === 0 || spicy.includes(item.spicy)
 
       return (
         categoryMatch &&
         priceMatch &&
+        vegMatch &&
         ratingMatch &&
         spicyMatch &&
         titleMatches(item, query)
       )
     })
-  }, [maxPrice, query, rating, selectedCategory, spicy])
+  }, [allItems, maxPrice, query, rating, selectedCategory, spicy, vegOnly])
 
-  const cartTotal = Object.values(cart).reduce((total, count) => total + count, 0)
+  const cartTotal = cartItems.reduce((total, item) => total + item.quantity, 0)
 
   function selectCategory(slug) {
     setSearchParams(slug === 'all' ? {} : { category: slug })
@@ -133,7 +140,7 @@ function MenuPage() {
   function clearFilters() {
     setQuery('')
     setVegOnly(false)
-    setMaxPrice(220)
+    setMaxPrice(500)
     setRating(0)
     setSpicy([])
   }
@@ -146,11 +153,10 @@ function MenuPage() {
     )
   }
 
-  function addItem(item) {
-    setCart((current) => ({
-      ...current,
-      [item.name]: (current[item.name] || 0) + 1,
-    }))
+  function getItemCount(item) {
+    return cartItems
+      .filter((cartItem) => cartItem.slug === item.slug)
+      .reduce((total, cartItem) => total + cartItem.quantity, 0)
   }
 
   return (
@@ -245,7 +251,7 @@ function MenuPage() {
                   className="w-full accent-[var(--color-primary)]"
                   type="range"
                   min="20"
-                  max="220"
+                  max={menuMaxPrice}
                   step="10"
                   value={maxPrice}
                   onChange={(event) => setMaxPrice(Number(event.target.value))}
@@ -285,22 +291,27 @@ function MenuPage() {
           <div>
             <div className="mb-4 flex items-center justify-between gap-3">
               <p className="m-0 text-sm font-black text-[#424750]">
-                {filteredItems.length} items found
+                {isLoading ? 'Refreshing live menu...' : `${filteredItems.length} items found`}
               </p>
               <div className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#eaded6] bg-white px-4 text-sm font-black text-[#20242b] shadow-sm">
                 <FiShoppingBag className="text-[var(--color-primary)]" aria-hidden="true" />
                 {cartTotal} added
               </div>
             </div>
+            {error ? (
+              <p className="mb-4 rounded-lg border border-[#f0d5c8] bg-[#fff6f0] px-4 py-3 text-xs font-bold text-[#8d3b20]">
+                Live menu could not be loaded, so the saved menu is shown.
+              </p>
+            ) : null}
 
             {filteredItems.length ? (
               <div className="grid grid-cols-3 gap-5 max-[1180px]:grid-cols-2 max-[620px]:grid-cols-1">
                 {filteredItems.map((item) => (
                   <MenuCard
-                    count={cart[item.name] || 0}
+                    count={getItemCount(item)}
                     item={item}
                     key={`${item.categorySlug}-${item.name}`}
-                    onAdd={() => addItem(item)}
+                    onAdd={() => addToCart(item)}
                   />
                 ))}
               </div>

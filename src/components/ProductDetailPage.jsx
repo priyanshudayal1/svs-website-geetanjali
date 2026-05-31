@@ -9,8 +9,8 @@ import {
   FiStar,
   FiThumbsUp,
 } from 'react-icons/fi'
-import { Link, useParams } from 'react-router-dom'
-import { allMenuItems } from '../data/menuData'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useMenuFeed } from '../hooks/useMenuFeed'
 
 const addOns = [
   { name: 'Extra Cheese', price: 20 },
@@ -63,9 +63,11 @@ function SuggestedCard({ item }) {
   )
 }
 
-function ProductDetailPage() {
+function ProductDetailPage({ addToCart }) {
   const { itemSlug } = useParams()
-  const item = allMenuItems.find((menuItem) => menuItem.slug === itemSlug)
+  const navigate = useNavigate()
+  const { allItems, isLoading } = useMenuFeed()
+  const item = allItems.find((menuItem) => menuItem.slug === itemSlug)
   const [selectedAddOns, setSelectedAddOns] = useState([])
   const [selectedSize, setSelectedSize] = useState('Regular')
   const [quantity, setQuantity] = useState(1)
@@ -87,15 +89,15 @@ function ProductDetailPage() {
       return []
     }
 
-    const sameCategory = allMenuItems.filter(
+    const sameCategory = allItems.filter(
       (menuItem) => menuItem.categorySlug === item.categorySlug && menuItem.slug !== item.slug,
     )
-    const extras = allMenuItems.filter(
+    const extras = allItems.filter(
       (menuItem) => menuItem.categorySlug !== item.categorySlug && menuItem.slug !== item.slug,
     )
 
     return [...sameCategory, ...extras].slice(0, 4)
-  }, [item])
+  }, [allItems, item])
 
   if (!item) {
     return (
@@ -103,7 +105,9 @@ function ProductDetailPage() {
         <section className="max-w-[520px]">
           <h1 className="m-0 text-4xl font-black text-[#171b21]">Item not found</h1>
           <p className="mt-3 mb-7 text-sm leading-[1.6] text-[#62666d]">
-            The item you opened is no longer available on the menu.
+            {isLoading
+              ? 'Refreshing the live menu. Please wait a moment.'
+              : 'The item you opened is no longer available on the menu.'}
           </p>
           <Link
             className="inline-flex min-h-11 items-center rounded-full bg-[var(--color-primary)] px-6 text-sm font-black text-white no-underline"
@@ -128,6 +132,16 @@ function ProductDetailPage() {
         ? current.filter((selectedName) => selectedName !== name)
         : [...current, name],
     )
+  }
+
+  function handleAddToCart() {
+    addToCart(item, {
+      addOns: selectedAddOns,
+      price: selectedSizePrice + addOnTotal,
+      quantity,
+      size: selectedSize,
+    })
+    navigate('/cart')
   }
 
   return (
@@ -282,6 +296,7 @@ function ProductDetailPage() {
               <button
                 className="h-14 cursor-pointer rounded-full border-0 bg-[var(--color-primary)] px-7 text-sm font-black text-white shadow-[0_14px_28px_rgb(var(--color-primary-shadow)_/_25%)] transition hover:bg-[#df5522]"
                 type="button"
+                onClick={handleAddToCart}
               >
                 Add to Cart - ₹{totalPrice}
               </button>
